@@ -1,72 +1,148 @@
+# FedLTLib: A Comprehensive Benchmark Library for Federated Long\-Tail Learning
 
-# LongTailLib
-联邦长尾学习评测平台
+## Introduction
 
-数据集生成部分
+**FedLTLib** is an open\-source, unified benchmark platform designed specifically for **federated long\-tail learning** scenarios\. It aims to address the ubiquitous class imbalance and non\-independent and identically distributed \(non\-IID\) data distribution challenges in real\-world federated learning systems\.
 
-1、	global（大多数论文采用的方法）
-先长尾分布（IF因子）再进行Direchlet分布
+This library provides standardized pipelines for generating diverse federated long\-tail datasets, as well as integrated implementations of state\-of\-the\-art \(SOTA\) federated long\-tail learning algorithms\. FedLTLib enables fair, reproducible, and systematic empirical evaluation for federated long\-tail learning research, eliminating the inconsistency of experimental settings across different studies\.
 
-参数设置：
+## Key Features
 
-1、iid：独立同分布，noniid：非独立同分布
+- **Standardized Long\-Tail Federated Dataset Generation**: Supports global/local long\-tail distribution construction, configurable imbalance factors, and multiple non\-IID partition strategies \(Dirichlet, Pathological, Extended Dirichlet\)\.
 
-2、"-"：客户端数据量不平衡，balance：客户端数据量平衡
+- **Diverse Non\-IID Configuration**: Covers client\-level data quantity balance/imbalance, adjustable Dirichlet alpha parameters, and flexible client number settings to simulate real industrial and edge computing scenarios\.
 
-3、dir：Dirichlet 分布划分、pat：病理非 IID、exdir：扩展 Dirichlet 策略，进一步增强非 IID 特性
+- **Integrated SOTA Algorithm Suite**: Integrates 9 mainstream federated long\-tail learning algorithms, supporting multiple ResNet backbones and unified training configuration\.
 
-4、longtail：使用长尾分布
+- **Reproducible Experimental Pipeline**: Unified parameter naming and running commands, ensuring consistent and reproducible benchmark results for academic research\.
 
-5、global：全局长尾分布、local：本地长尾分布
+## Environment Requirements
 
-6、不平衡因子IF
+This project is developed based on Python and PyTorch\. Please configure the following basic environment for stable operation:
 
-7、Dirichlet中的alpha设置
+- Python \&gt;= 3\.8
 
-8、客户端数量
+- PyTorch \&gt;= 1\.10
 
-调用语句：
+- torchvision
 
-python dataset/generate_Cifar10.py noniid – dir longtail global 50 0.5 20  
+- numpy
 
-<img width="865" height="356" alt="image" src="https://github.com/user-attachments/assets/cc2fa17e-6d6f-4ae2-8fe1-1760e1eea3e7" />
+- matplotlib
 
+- scipy
 
+## Federated Long\-Tail Dataset Generation
 
-调用长尾学习方法
+FedLTLib supports flexible customization of federated long\-tail datasets via configurable hyperparameters\. We take the CIFAR\-10 dataset as the default benchmark dataset\.
 
-1、CReFF
+### Parameter Definition
 
+|Parameter|Description|
+|---|---|
+|`iid / noniid`|Data partition mode: Independent and Identically Distributed / Non\-Independent and Identically Distributed|
+|`\- / balance`|Client data volume setting: Imbalanced client data quantity / Balanced client data quantity|
+|`dir / pat / exdir`|Non\-IID partition strategy: Standard Dirichlet / Pathological Non\-IID / Extended Dirichlet \(enhanced non\-IID\)|
+|`longtail`|Enable class long\-tail distribution construction|
+|`global / local`|Long\-tail distribution scope: Global long\-tail / Local client\-level long\-tail|
+|`IF`|Imbalance Factor, controlling the degree of class distribution imbalance|
+|`alpha`|Dirichlet distribution parameter, controlling the degree of data heterogeneity among clients|
+|`Client Number`|Total number of federated learning clients|
+
+### Dataset Generation Command
+
+The following command generates a **global long\-tail, Dirichlet\-based non\-IID, client\-imbalanced** CIFAR\-10 dataset:
+
+```Plain Text
+python dataset/generate_Cifar10.py noniid --dir longtail global 50 0.5 20
+```
+
+*Configuration Explanation: IF=50, Dirichlet alpha=0\.5, total client number=20*
+
+## Supported Federated Long\-Tail Learning Algorithms
+
+FedLTLib integrates 9 mainstream SOTA federated long\-tail learning methods with unified training pipelines\. All experiments support customizable backbone networks and global training rounds\.
+
+### Model Training Commands
+
+All training tasks adopt the unified dataset generated above \(Cifar10\-IF50\-α0\.5\-global\-NC20 by default\)\. The core training parameters include dataset path, algorithm type, backbone network, global training rounds, and device ID\.
+
+#### 1\. CReFF
+
+```Plain Text
 python main.py -data Cifar10-IF50-α0.5-global-NC20 -algo CREFF -m ResNet8 -gr 200 -did 0
+```
 
-2、CLIP2FL
+#### 2\. CLIP2FL
 
+```Plain Text
 python main.py -data Cifar10-IF50-α0.5-global-NC20 -m ResNet8 -algo CLIP2FL -gr 200 -did 0
+```
 
-3、CCVR
+#### 3\. CCVR
 
+```Plain Text
 python main.py -data Cifar10-IF50-α0.5-global-NC20 -algo CCVR -m resnet8 -gr 200 -did 0
+```
 
-4、RUCR
+#### 4\. RUCR
 
+```Plain Text
 python main.py -data Cifar10-IF50-α0.5-global-NC20 -algo RUCR -m resnet8 -gr 200 -did 0
+```
 
-5、FedETF
+#### 5\. FedETF
 
-python main.py -data Cifar10-IF50-α0.5-global-NC20 -m resnet20 -algo fedetf -gr 200 -did 0 
+```Plain Text
+python main.py -data Cifar10-IF50-α0.5-global-NC20 -m resnet20 -algo fedetf -gr 200 -did 0
+```
 
-6、FedLoGe
+#### 6\. FedLoGe
 
+```Plain Text
 python main.py -data Cifar10-IF50-α0.5-global-NC40 -algo fedloge -m resnet18 -gr 200 -did 0
+```
 
-7、FedNH
+#### 7\. FedNH
 
+```Plain Text
 python main.py -data Cifar10-IF50-α0.5-global-NC100 -algo fednh -m resnet18 -gr 200 -did 0
+```
 
-8、FedIC
+#### 8\. FedIC
 
+```Plain Text
 python main.py -data Cifar10-IF50-α0.5-global-NC20 -algo fedic -m resnet8 -gr 200 -did 0
+```
 
-9、FedGraB
+#### 9\. FedGraB
 
+```Plain Text
 python main.py -data Cifar10-IF50-α0.5-global-NC40 -algo fedgrab -m resnet18 -gr 200 -did 0
+```
+
+## Parameter Instruction
+
+- `\-data`: Specify the path and configuration of the generated federated long\-tail dataset
+
+- `\-algo`: Specify the federated long\-tail learning algorithm to be trained
+
+- `\-m`: Specify the backbone network \(ResNet8/ResNet18/ResNet20\)
+
+- `\-gr`: Set the number of global federated training rounds
+
+- `\-did`: Specify the GPU device ID for training
+
+## Citation
+
+If you use FedLTLib for your research, please star this repository and cite our project in your publications\.
+
+## Contribution \&amp; Support
+
+We welcome all forms of contributions, including new algorithm integration, dataset expansion, code optimization, and bug fixes\. For questions and technical support, please submit an Issue or initiate a Pull Request\.
+
+## License
+
+This project is open\-source under the **MIT License**\. Free for academic and non\-commercial use\.
+
+
