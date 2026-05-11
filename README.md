@@ -41,7 +41,7 @@ FedLTLib supports flexible customization of federated long\-tail datasets via co
 |Parameter|Description|
 |---|---|
 |`iid / noniid`|Data partition mode: Independent and Identically Distributed / Non\-Independent and Identically Distributed|
-|`\- / balance`|Client data volume setting: Imbalanced client data quantity / Balanced client data quantity|
+|`- / balance`|Client data volume setting: Imbalanced client data quantity / Balanced client data quantity|
 |`dir / pat / exdir`|Non\-IID partition strategy: Standard Dirichlet / Pathological Non\-IID / Extended Dirichlet \(enhanced non\-IID\)|
 |`longtail`|Enable class long\-tail distribution construction|
 |`global / local`|Long\-tail distribution scope: Global long\-tail / Local client\-level long\-tail|
