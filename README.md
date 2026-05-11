@@ -1,4 +1,4 @@
-# FedLTLib: A Comprehensive Benchmark Library for Federated Long\-Tail Learning
+# FedLTLib: A Comprehensive Benchmark for Federated Long-Tail Learning
 
 ## Introduction
 
@@ -20,9 +20,9 @@ This library provides standardized pipelines for generating diverse federated lo
 
 This project is developed based on Python and PyTorch\. Please configure the following basic environment for stable operation:
 
-- Python \&gt;= 3\.8
+- Python >= 3.8
 
-- PyTorch \&gt;= 1\.10
+- PyTorch >= 1.10
 
 - torchvision
 
@@ -54,7 +54,7 @@ FedLTLib supports flexible customization of federated long\-tail datasets via co
 The following command generates a **global long\-tail, Dirichlet\-based non\-IID, client\-imbalanced** CIFAR\-10 dataset:
 
 ```Plain Text
-python dataset/generate_Cifar10.py noniid --dir longtail global 50 0.5 20
+python dataset/generate_Cifar10.py noniid - dir longtail global 50 0.5 20
 ```
 
 *Configuration Explanation: IF=50, Dirichlet alpha=0\.5, total client number=20*
