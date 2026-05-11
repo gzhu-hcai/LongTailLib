@@ -1,3 +1,15 @@
+LongTailLib: A Comprehensive Benchmark for Federated Long-Tail Learning
+LongTailLib is an open-source, unified evaluation framework designed for Federated Long-Tail Learning (FL-LT). It aims to provide researchers with a standardized environment to benchmark and develop algorithms addressing the dual challenges of data heterogeneity (non-IID) and extreme class imbalance in federated networks.
+
+🚀 Key Features
+Integrated Benchmarks: Supports 9 to 13 mainstream FL-LT algorithms, covering various optimization strategies.
+Flexible Data Partitioning: Built-in support for Dirichlet distribution ($\alpha$) and various Imbalance Factors (IF) to simulate complex real-world scenarios.
+Modular Architecture: Designed for high extensibility, allowing for easy integration of new datasets, models, and custom FL-LT algorithms.
+Standardized Evaluation: Provides consistent metrics and visualization tools to analyze performance across head, medium, and tail classes.
+
+📚 Supported Algorithms
+The library currently includes high-quality implementations of the following methods, categorized by their technical approach:
+
 # LongTailLib
 联邦长尾学习评测平台
 
