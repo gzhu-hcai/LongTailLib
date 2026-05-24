@@ -289,6 +289,7 @@ def resnet4(**kwargs: Any) -> ResNet: # 4 = 2 + 2 * (1)
     return ResNet(BasicBlock, [1], **kwargs)
 
 def resnet8(num_classes=10, **kwargs):
+<<<<<<< HEAD
     """ResNet8 for CIFAR: 1+1+1+1 blocks with cifar_stem"""
     return ResNet(BasicBlock, [1, 1, 1, 1], num_classes=num_classes, cifar_stem=True, **kwargs)
 
@@ -296,3 +297,10 @@ def resnet8(num_classes=10, **kwargs):
 def resnet20_cifar(num_classes=10, **kwargs):
     """ResNet20 for CIFAR: 3+3+3 blocks = 6*3+2 = 20 layers with cifar_stem"""
     return ResNet(BasicBlock, [3, 3, 3], features=[64, 128, 256], num_classes=num_classes, cifar_stem=True, **kwargs)
+=======
+    return ResNet(BasicBlock, [1, 1, 1, 1], num_classes=num_classes, cifar_stem=True, **kwargs)
+
+
+def resnet20(num_classes=10, **kwargs):
+    return ResNet(BasicBlock, [2, 2, 2, 2], num_classes=num_classes, cifar_stem=True, **kwargs)
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d

@@ -153,6 +153,7 @@ def get_transforms(dataset, is_train=True):
         torchvision.transforms.Compose对象
     """
     dataset_lower = dataset.lower()
+<<<<<<< HEAD
 
     # CIFAR-10
     if 'cifar10' in dataset_lower and 'cifar100' not in dataset_lower:
@@ -170,11 +171,35 @@ def get_transforms(dataset, is_train=True):
                 normalize
             ])
         else:
+=======
+    
+    # CIFAR-10和CIFAR-100
+    if 'cifar10' in dataset_lower or 'cifar100' in dataset_lower:
+        # CIFAR标准normalize参数（与CReFF源码一致）
+        # 重要：这些参数来自CIFAR10数据集的统计值，必须使用这些值才能与预训练模型兼容
+        normalize = transforms.Normalize(
+            mean=[0.4914, 0.4822, 0.4465],
+            std=[0.2023, 0.1994, 0.2010]  # 修正为CReFF使用的标准参数
+        )
+        
+        if is_train:
+            # 训练集：ToTensor + 数据增强 + normalize
+            return transforms.Compose([
+                transforms.ToPILImage(),  # numpy array -> PIL Image
+                transforms.RandomCrop(32, padding=4),
+                transforms.RandomHorizontalFlip(),
+                transforms.ToTensor(),  # PIL -> Tensor, [0, 255] uint8 -> [0, 1] float32
+                normalize  # 标准化到均值0方差1
+            ])
+        else:
+            # 测试集：ToTensor + normalize
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
             return transforms.Compose([
                 transforms.ToPILImage(),
                 transforms.ToTensor(),
                 normalize
             ])
+<<<<<<< HEAD
 
     # CIFAR-100
     elif 'cifar100' in dataset_lower:
@@ -233,6 +258,20 @@ def get_transforms(dataset, is_train=True):
                 transforms.ToTensor(),
                 normalize
             ])
+=======
+    
+    # MNIST和FashionMNIST
+    elif 'mnist' in dataset_lower or 'fashion' in dataset_lower:
+        normalize = transforms.Normalize(mean=[0.5], std=[0.5])
+        
+        if is_train:
+            return transforms.Compose([
+                transforms.RandomAffine(degrees=10, translate=(0.1, 0.1), scale=(0.9, 1.1)),
+                normalize
+            ])
+        else:
+            return transforms.Compose([normalize])
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
     
     # 其他数据集：默认只normalize
     else:

@@ -22,14 +22,23 @@ from flcore.servers.serverfedetf import FedETF
 from flcore.servers.serverloge import FedLoGe
 from flcore.servers.serverfedic import FedIC
 from flcore.servers.servergrab import FedGraB
+<<<<<<< HEAD
 from flcore.servers.serverfednh import FedNH
 from flcore.servers.serverfedyoyo import FedYoYo
+=======
+from flcore.servers.serverfednh import FedNHNative
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
 
 from flcore.trainmodel.models import *
 
 from flcore.trainmodel.bilstm import *
+<<<<<<< HEAD
 from flcore.trainmodel.resnet_imagenet import *
 from flcore.trainmodel.resnet_cifar import resnet8_cifar, resnet8_cifar_512, resnet18_cifar, resnet20_cifar
+=======
+from flcore.trainmodel.resnet import *
+from flcore.trainmodel.resnet_cifar import resnet8_cifar, resnet8_cifar_512
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
 from flcore.trainmodel.alexnet import *
 from flcore.trainmodel.mobilenet_v2 import *
 from flcore.trainmodel.transformer import *
@@ -144,6 +153,7 @@ def run(args):
                 args.model = DNN(60, 20, num_classes=args.num_classes).to(args.device)
         
         elif model_str == "ResNet18":
+<<<<<<< HEAD
             # FedETF uses specialized ResNet18 with ETF classifier
             if args.algorithm == "FedETF" or args.algorithm == "fedetf":
                 from flcore.trainmodel.resnet_fedetf import ResNet18_FedETF
@@ -155,11 +165,22 @@ def run(args):
                 # Use CIFAR-style ResNet18 (feature_dim=512, returns (feature, logit))
                 args.model = resnet18_cifar(num_classes=args.num_classes).to(args.device)
 
+=======
+            # FedGraB 和 FedLoGe 使用 resnet_cifar.py 中的 CIFAR 风格 ResNet18
+            # 它们在各自的 server 中初始化模型，这里跳过
+            if args.algorithm in ["FedGraB", "fedgrab", "FedLoGe", "fedloge"]:
+                pass  # Model will be created in server's __init__
+            else:
+                # 其他算法使用 resnet.py 的 ImageNet 风格 resnet18
+                args.model = resnet18(num_classes=args.num_classes).to(args.device)
+        
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
         elif model_str == "ResNet20" or model_str == "resnet20":
             # FedETF uses specialized ResNet20 with ETF classifier
             if args.algorithm == "FedETF" or args.algorithm == "fedetf":
                 from flcore.trainmodel.resnet_fedetf import ResNet20_FedETF
                 args.model = ResNet20_FedETF(num_classes=args.num_classes, device=args.device).to(args.device)
+<<<<<<< HEAD
             # These algorithms handle model creation in their server's __init__
             elif args.algorithm in ["FedGraB", "fedgrab", "FedLoGe", "fedloge", "CReFF", "FedIC", "fedic", "CLIP2FL"]:
                 args.model = model_str  # Pass string, server will create model
@@ -181,6 +202,25 @@ def run(args):
             else:
                 # All other algorithms use ResNet8 with feature_dim=256 (returns (feature, logit))
                 args.model = resnet8_cifar(num_classes=args.num_classes, scaling=4).to(args.device)
+=======
+            else:
+                # Other algorithms use standard resnet20
+                args.model = resnet20(num_classes=args.num_classes).to(args.device)
+        
+        elif model_str == "ResNet10":
+            args.model = resnet10(num_classes=args.num_classes).to(args.device)
+        
+        elif model_str == "ResNet8":
+            # CReFF, FEDIC, CCVR, RUCR use ResNet8 with feature_dim=256 (returns feature+logit)
+            if args.algorithm in ["CReFF", "FedIC", "fedic", "CCVR", "RUCR"]:
+                args.model = resnet8_cifar(num_classes=args.num_classes, scaling=4).to(args.device)
+            # CLIP2FL uses ResNet8 with feature_dim=512 (has add_mlp layer)
+            elif args.algorithm == "CLIP2FL":
+                args.model = resnet8_cifar_512(num_classes=args.num_classes, scaling=4).to(args.device)
+            else:
+                # Other algorithms use standard resnet8
+                args.model = resnet8(num_classes=args.num_classes).to(args.device)
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
         
         elif model_str == "ResNet34":
             args.model = torchvision.models.resnet34(pretrained=False, num_classes=args.num_classes).to(args.device)
@@ -242,6 +282,7 @@ def run(args):
             raise NotImplementedError
 
         # 打印模型结构（跳过在 server 中创建模型的算法）
+<<<<<<< HEAD
         if args.algorithm not in ["FedGraB", "fedgrab", "FedLoGe", "fedloge", "CReFF", "FedIC", "fedic"]:
             print(args.model)
 
@@ -266,6 +307,15 @@ def run(args):
         if args.algorithm == "FedAvg":
             args.head = copy.deepcopy(get_classifier(args.model))
             set_classifier(args.model, nn.Identity())
+=======
+        if args.algorithm not in ["FedGraB", "fedgrab", "FedLoGe", "fedloge"]:
+            print(args.model)
+
+        # select algorithm (kept only)
+        if args.algorithm == "FedAvg":
+            args.head = copy.deepcopy(args.model.fc)
+            args.model.fc = nn.Identity()
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
             args.model = BaseHeadSplit(args.model, args.head)
             server = FedAvg(args, i)
 
@@ -273,14 +323,24 @@ def run(args):
             server = FedProx(args, i)
 
         elif args.algorithm == "MOON":
+<<<<<<< HEAD
             args.head = copy.deepcopy(get_classifier(args.model))
             set_classifier(args.model, nn.Identity())
+=======
+            args.head = copy.deepcopy(args.model.fc)
+            args.model.fc = nn.Identity()
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
             args.model = BaseHeadSplit(args.model, args.head)
             server = MOON(args, i)
 
         elif args.algorithm == "FedLC":
+<<<<<<< HEAD
             args.head = copy.deepcopy(get_classifier(args.model))
             set_classifier(args.model, nn.Identity())
+=======
+            args.head = copy.deepcopy(args.model.fc)
+            args.model.fc = nn.Identity()
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
             args.model = BaseHeadSplit(args.model, args.head)
             server = FedLC(args, i)
 
@@ -302,12 +362,17 @@ def run(args):
 
         elif args.algorithm == "FedNH":
             args.model = args.model.cpu()
+<<<<<<< HEAD
             server = FedNH(args, i)
+=======
+            server = FedNHNative(args, i)
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
         
         elif args.algorithm == "FedNH2" or args.algorithm == "fednh2":
             # FedNH2: Direct copy from FedNH-main source code
             server = FedNH2(args, i)
 
+<<<<<<< HEAD
         elif args.algorithm == "FedLoGe" or args.algorithm == "fedloge" or args.algorithm == "fedloge2":
             # FedLoGe: Direct copy from source code
             # Uses standard ResNet (no BaseHeadSplit wrapper)
@@ -317,6 +382,23 @@ def run(args):
         elif args.algorithm == "FedGraB" or args.algorithm == "fedgrab":
             # FedGraB: Model is initialized inside servergrab.py
             from flcore.servers.servergrab import FedGraB
+=======
+        elif args.algorithm == "FedLoGe":
+            args.head = copy.deepcopy(args.model.fc)
+            args.model.fc = nn.Identity()
+            args.model = BaseHeadSplit(args.model, args.head)
+            server = FedLoGe(args, i)
+        
+        elif args.algorithm == "fedloge" or args.algorithm == "fedloge2":
+            # FedLoGe: Direct copy from source code
+            # Uses standard ResNet (no BaseHeadSplit wrapper)
+            server = FedLoGe(args, i)
+
+        elif args.algorithm == "FedGraB":
+            args.head = copy.deepcopy(args.model.fc)
+            args.model.fc = nn.Identity()
+            args.model = BaseHeadSplit(args.model, args.head)
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
             server = FedGraB(args, i)
         
         
@@ -337,11 +419,20 @@ def run(args):
         elif args.algorithm == "FedIC" or args.algorithm == "fedic":
             from flcore.servers.serverfedic import FedIC
             server = FedIC(args, i)
+<<<<<<< HEAD
 
         elif args.algorithm == "FedYoYo":
             # FedYoYo uses full model that returns (feature, output) tuple
             # No head split needed
             server = FedYoYo(args, i)
+=======
+        
+        elif args.algorithm == "FedGraB" or args.algorithm == "fedgrab":
+            # FedGraB: Direct copy from source code
+            # Model is initialized inside servergrab.py using resnet18_cifar
+            from flcore.servers.servergrab import FedGraB
+            server = FedGraB(args, i)
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
             
         elif args.algorithm == "FedCross":
             raise NotImplementedError("FedCross is requested to be kept but its server implementation is not present in the repo.")
@@ -573,7 +664,10 @@ if __name__ == "__main__":
         'fedic': 'FedIC',
         'fedgrab': 'FedGraB',
         'ccvr': 'CCVR',
+<<<<<<< HEAD
         'fedyoyo': 'FedYoYo',
+=======
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
     }
 
     _model_map = {
@@ -629,9 +723,22 @@ if __name__ == "__main__":
     # CRITICAL FIX: Apply algorithm-specific parameter mappings BEFORE calling run(args)
     # Harmonize official CLIP2FL flags with internal ones (single, canonical block)
     if args.algorithm == "CLIP2FL":
+<<<<<<< HEAD
         # CLIP2FL default alpha=1.0 (aligned with source code options.py)
         # Only override if user explicitly passed kd_alpha
         if getattr(args, 'kd_alpha', None) not in (None, 0.0):
+=======
+        # If user didn't explicitly set alpha (it's the parser default) and didn't pass kd_alpha,
+        # neutralize alpha to 0.0 so KD is OFF by default for CLIP2FL.
+        try:
+            _alpha_default = parser.get_default('alpha')
+        except Exception:
+            _alpha_default = 1.0
+        if (getattr(args, 'alpha', None) == _alpha_default) and getattr(args, 'kd_alpha', None) in (None, 0.0):
+            args.alpha = 0.0
+        # Prefer explicit alpha; fall back to kd_alpha only if alpha not set and kd_alpha > 0
+        if (getattr(args, 'alpha', None) is None or args.alpha == 0.0) and getattr(args, 'kd_alpha', None) not in (None, 0.0):
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
             args.alpha = args.kd_alpha
         # Map lr_local_training to internal local_learning_rate when provided
         if getattr(args, 'lr_local_training', None) is not None:

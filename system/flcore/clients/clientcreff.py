@@ -6,7 +6,10 @@ Reference:
     https://github.com/shangxinyi/CReFF-FL
 """
 
+<<<<<<< HEAD
 import time
+=======
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
 from torchvision.transforms import transforms
 import numpy as np
 from torch import unsqueeze
@@ -19,7 +22,10 @@ from sklearn import metrics
 
 from flcore.clients.clientbase import Client
 from flcore.trainmodel.resnet_cifar import resnet8_cifar
+<<<<<<< HEAD
 from flcore.trainmodel.param_aug import DiffAugment
+=======
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
 
 
 def get_class_num(class_list):
@@ -67,10 +73,13 @@ class Local(object):
         for num_compute in range(10):
             for c, num in zip(list_class, per_class_compose):
                 img_real = get_images(c, args.batch_real)
+<<<<<<< HEAD
                 # DSA (Differentiable Siamese Augmentation) - aligned with source code
                 if getattr(args, 'dsa', False):
                     seed = int(time.time() * 1000) % 100000
                     img_real = DiffAugment(img_real, args.dsa_strategy, seed=seed, param=args.dsa_param)
+=======
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
                 lab_real = torch.ones((img_real.shape[0],), device=args.device, dtype=torch.long) * c
                 feature_real, output_real = self.local_model(img_real)
                 loss_real = criterion(output_real, lab_real)
@@ -118,6 +127,7 @@ class Local(object):
 
 class clientCREFF(Client):
     """CReFF client with support for (feature, output) tuple model"""
+<<<<<<< HEAD
 
     def __init__(self, args, id, train_samples, test_samples, **kwargs):
         # CReFF uses its own model management, so we need to create the model here
@@ -142,6 +152,11 @@ class clientCREFF(Client):
         # Restore original args.model (in case it's used elsewhere as string)
         args.model = original_model
 
+=======
+    
+    def __init__(self, args, id, train_samples, test_samples, **kwargs):
+        super().__init__(args, id, train_samples, test_samples, **kwargs)
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
         self.criterion = CrossEntropyLoss().to(self.device)
         self.transform_train = transforms.Compose([
             transforms.RandomCrop(32, padding=4),

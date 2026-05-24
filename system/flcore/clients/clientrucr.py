@@ -17,7 +17,10 @@ import copy
 import torchvision.transforms as transforms
 
 from flcore.clients.clientbase import Client
+<<<<<<< HEAD
 from utils.data_utils import read_client_data, get_transforms
+=======
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
 
 
 class MixupDataset_norm(Dataset):
@@ -39,13 +42,20 @@ class MixupDataset_norm(Dataset):
         self.__mixup_syn_feat_pure_rand_norm__()
 
     def __mixup_syn_feat_pure_rand_norm__(self):
+<<<<<<< HEAD
         """Source code Dataset/dataset.py line 89-102"""
+=======
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
         num = self.crt_feat_num
         l = self.uniform_left
         r_arg = self.uniform_right - l
         for cls in range(self.num_classes):
+<<<<<<< HEAD
             # Source code doesn't check if cls is in means, assumes all classes have prototypes
             if cls not in self.means:
+=======
+            if self.means.get(cls) is None:
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
                 continue
             fs_shuffle_idx = torch.randperm(self.fs_len)
             for i in range(num):
@@ -100,6 +110,7 @@ class clientRUCR(Client):
         # Pre-model for computing centroids
         self.pre_model = copy.deepcopy(args.model)
         
+<<<<<<< HEAD
         # RUCR hyperparameters from args (aligned with source code options.py defaults)
         self.feat_loss_arg = getattr(args, 'feat_loss_arg', 0.0)  # Source default: 0.0
         self.t = getattr(args, 't', 1.0)  # Temperature, source default: 1.0
@@ -109,6 +120,17 @@ class clientRUCR(Client):
         self.crt_feat_num = getattr(args, 'crt_feat_num', 0)  # Source default: 0
         self.crt_batch_size = getattr(args, 'crt_batch_size', 256)
         self.uniform_left = getattr(args, 'uniform_left', 0.2)  # Source default: 0.2
+=======
+        # RUCR hyperparameters from args (GitHub recommended settings)
+        self.feat_loss_arg = getattr(args, 'feat_loss_arg', 0.15)
+        self.t = getattr(args, 't', 0.9)  # Temperature
+        self.times_arg = getattr(args, 'times_arg', 1.0)
+        self.lr_cls_balance = getattr(args, 'lr_cls_balance', 0.01)
+        self.local_bal_ep = getattr(args, 'local_bal_ep', 50)
+        self.crt_feat_num = getattr(args, 'crt_feat_num', 100)
+        self.crt_batch_size = getattr(args, 'crt_batch_size', 256)
+        self.uniform_left = getattr(args, 'uniform_left', 0.35)
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
         self.uniform_right = getattr(args, 'uniform_right', 0.95)
         
         # Feature dimension from model
@@ -120,6 +142,15 @@ class clientRUCR(Client):
         self.cls_ratio = None
         self.fake_id_tensor = None
         
+<<<<<<< HEAD
+=======
+        # Data augmentation transform
+        self.transform_train = transforms.Compose([
+            transforms.RandomCrop(32, padding=4),
+            transforms.RandomHorizontalFlip()
+        ])
+        
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
         # Class distribution
         self.class_compose = self._get_class_distribution()
         
@@ -146,6 +177,7 @@ class clientRUCR(Client):
                 class_counts[int(label.item())] += 1
         return class_counts
 
+<<<<<<< HEAD
     def load_train_data_no_aug(self, batch_size=None):
         """Load training data WITHOUT augmentation (for centroid computation).
         Source computes centroids on non-augmented data (only ToTensor+Normalize)."""
@@ -159,6 +191,11 @@ class clientRUCR(Client):
         """
         Local training with balanced contrastive learning - source code line 113-140
         Note: load_train_data() already applies RandomCrop+HorizontalFlip via read_client_data.
+=======
+    def train(self):
+        """
+        Local training with balanced contrastive learning - source code line 113-140
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
         """
         trainloader = self.load_train_data()
         self.model.train()
@@ -168,6 +205,12 @@ class clientRUCR(Client):
                 x = x.to(self.device)
                 y = y.to(self.device)
                 
+<<<<<<< HEAD
+=======
+                # Apply data augmentation
+                x = self.transform_train(x)
+                
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
                 self.optimizer.zero_grad()
                 output = self.model(x)
                 
@@ -208,7 +251,11 @@ class clientRUCR(Client):
         Calculate local class centroids - source code line 156-185
         """
         self.pre_model.eval()
+<<<<<<< HEAD
         trainloader = self.load_train_data_no_aug()
+=======
+        trainloader = self.load_train_data()
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
         
         global_feats_all, labels_all = [], []
         with torch.no_grad():

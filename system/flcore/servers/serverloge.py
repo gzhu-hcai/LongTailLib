@@ -69,11 +69,17 @@ class ETF_Classifier(nn.Module):
         for step in range(n_steps):
             optimizer.zero_grad()
             
+<<<<<<< HEAD
             # Constraint 1: L2 norm of each column ≈ 1.0 (not 0.1 as in source)
             # Source code has 0.1 but this causes logits to be too small
             # Using 1.0 to match the comment "L2 norm of each row should be 1"
             col_norms = torch.norm(sparse_etf, p=2, dim=0)
             norm_loss = torch.sum((col_norms - 1.0) ** 2)
+=======
+            # Constraint 1: L2 norm of each column ≈ 0.1
+            col_norms = torch.norm(sparse_etf, p=2, dim=0)
+            norm_loss = torch.sum((col_norms - 0.1) ** 2)
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
             
             # Constraint 2: Maximize angle between vectors
             normalized_etf = sparse_etf / (col_norms + 1e-8)
@@ -278,9 +284,12 @@ class FedLoGe(Server):
         
         # Create clients
         self.set_clients(ClientLOGE)
+<<<<<<< HEAD
 
         # Compute global train distribution AFTER clients are created
         self._compute_global_train_distribution()
+=======
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
         
         # Compute global training distribution for 3-shot split
         self._compute_global_train_distribution()
@@ -315,12 +324,17 @@ class FedLoGe(Server):
     
     def _compute_global_train_distribution(self):
         """Compute global training distribution for 3-shot split"""
+<<<<<<< HEAD
         # Skip if clients not yet created (will be called again after set_clients)
         if not hasattr(self, 'clients') or len(self.clients) == 0:
             return
 
         class_counts = [0] * self.num_classes
 
+=======
+        class_counts = [0] * self.num_classes
+        
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
         for c in self.clients:
             train_data = read_client_data(self.dataset, c.id, is_train=True)
             for _, label in train_data:

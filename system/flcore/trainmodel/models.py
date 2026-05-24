@@ -12,12 +12,18 @@ class BaseHeadSplit(nn.Module):
 
         self.base = base
         self.head = head
+<<<<<<< HEAD
 
     def forward(self, x):
         out = self.base(x)
         # Handle models that return (feature, logit) tuple
         if isinstance(out, tuple):
             out = out[0]  # Use feature for head
+=======
+        
+    def forward(self, x):
+        out = self.base(x)
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
         out = self.head(out)
 
         return out
@@ -225,7 +231,12 @@ class Net(nn.Module):
         x = self.fc1(x)
         x = nn.ReLU()(x)
         x = self.fc(x)
+<<<<<<< HEAD
         return x  # Return logit, not log_softmax
+=======
+        output = F.log_softmax(x, dim=1)
+        return output
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
 
 # ====================================================================================================================
 
@@ -237,7 +248,12 @@ class Mclr_Logistic(nn.Module):
     def forward(self, x):
         x = torch.flatten(x, 1)
         x = self.fc(x)
+<<<<<<< HEAD
         return x  # Return logit, not log_softmax
+=======
+        output = F.log_softmax(x, dim=1)
+        return output
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
 
 # ====================================================================================================================
 
@@ -251,7 +267,12 @@ class DNN(nn.Module):
         x = torch.flatten(x, 1)
         x = F.relu(self.fc1(x))
         x = self.fc(x)
+<<<<<<< HEAD
         return x  # Return logit, not log_softmax
+=======
+        x = F.log_softmax(x, dim=1)
+        return x
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
 
 # ====================================================================================================================
 
@@ -272,7 +293,12 @@ class CifarNet(nn.Module):
         x = F.relu(self.fc1(x))
         x = F.relu(self.fc2(x))
         x = self.fc(x)
+<<<<<<< HEAD
         return x  # Return logit, not log_softmax
+=======
+        x = F.log_softmax(x, dim=1)
+        return x
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
 
 # ====================================================================================================================
 
@@ -359,7 +385,12 @@ class LeNet(nn.Module):
         x = self.bn(x)
         x = self.dropout(x)
         x = self.fc(x)
+<<<<<<< HEAD
         return x  # Return logit, not log_softmax
+=======
+        x = F.log_softmax(x, dim=1)
+        return x
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
 
 # ====================================================================================================================
 
@@ -426,7 +457,13 @@ class LSTMNet(nn.Module):
         out = torch.relu_(out[:,-1,:])
         out = self.dropout(out)
         out = self.fc(out)
+<<<<<<< HEAD
         return out  # Return logit, not log_softmax
+=======
+        out = F.log_softmax(out, dim=1)
+            
+        return out
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
 
 # ====================================================================================================================
 
@@ -452,7 +489,13 @@ class fastText(nn.Module):
         embedded_sent = self.embedding(text)
         h = self.fc1(embedded_sent.mean(1))
         z = self.fc(h)
+<<<<<<< HEAD
         return z  # Return logit, not log_softmax
+=======
+        out = F.log_softmax(z, dim=1)
+
+        return out
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
 
 # ====================================================================================================================
 
@@ -502,7 +545,13 @@ class TextCNN(nn.Module):
         all_out = torch.cat((conv_out1, conv_out2, conv_out3), 1)
         final_feature_map = self.dropout(all_out)
         out = self.fc(final_feature_map)
+<<<<<<< HEAD
         return out  # Return logit, not log_softmax
+=======
+        out = F.log_softmax(out, dim=1)
+
+        return out
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
 
 # ====================================================================================================================
 

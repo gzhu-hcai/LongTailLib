@@ -191,6 +191,7 @@ class FedETF(Server):
     
     def evaluate(self, acc=None, loss=None):
         """
+<<<<<<< HEAD
         Evaluate and print metrics - use parent class method for 3-shot accuracy
         """
         # Call parent class evaluate which includes 3-shot accuracy computation
@@ -223,12 +224,62 @@ class FedETF(Server):
                 # FedETF-specific: use feature @ proto * scaling for prediction
                 if isinstance(output, tuple) and len(output) >= 2:
                     feature = output[0]
+=======
+        Evaluate and print metrics
+        """
+        stats = self.test_metrics()
+        stats_train = self.train_metrics()
+
+        test_acc = sum(stats[2]) * 1.0 / sum(stats[1])
+        test_auc = sum(stats[3]) * 1.0 / len(stats[3])
+        train_loss = sum(stats_train[2]) * 1.0 / sum(stats_train[1])
+        
+        accs = [a / n for a, n in zip(stats[2], stats[1])]
+        aucs = stats[3]
+
+        self.rs_test_acc.append(test_acc)
+        self.rs_train_loss.append(train_loss)
+        
+        # Global evaluation
+        global_acc = self._evaluate_global()
+        self.rs_global_acc.append(global_acc)
+
+        print(f"Averaged Train Loss: {train_loss:.4f}")
+        print(f"Local Averaged Test Accuracy: {test_acc:.4f}")
+        print(f"Averaged Test AUC: {test_auc:.4f}")
+        print(f"Std Test Accuracy: {np.std(accs):.4f}")
+        print(f"Std Test AUC: {np.std(aucs):.4f}")
+        print(f"Global Averaged Test Accuracy: {global_acc:.4f}")
+    
+    def _evaluate_global(self):
+        """
+        Evaluate on global test set using ETF classifier
+        """
+        if self.global_testloader is None:
+            return 0.0
+        
+        self.global_model.eval()
+        correct = 0
+        total = 0
+        
+        with torch.no_grad():
+            for x, y in self.global_testloader:
+                x = x.to(self.device)
+                y = y.to(self.device)
+                
+                output = self.global_model(x)
+                
+                if isinstance(output, tuple) and len(output) >= 2:
+                    feature = output[0]
+                    # Use ETF prediction
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
                     if hasattr(self.global_model, 'proto_classifier'):
                         proto = self.global_model.proto_classifier.proto
                         output = torch.matmul(feature, proto)
                         output = self.global_model.scaling_train * output
                     else:
                         output = output[1]
+<<<<<<< HEAD
 
                 _, predicted = torch.max(output, 1)
                 total += labels.size(0)
@@ -261,6 +312,14 @@ class FedETF(Server):
         except Exception as e:
             print(f"Warning: failed to compute global test accuracy: {e}")
             return None, None
+=======
+                
+                _, predicted = torch.max(output, 1)
+                total += y.size(0)
+                correct += (predicted == y).sum().item()
+        
+        return correct / total if total > 0 else 0.0
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
     
     def test_metrics(self):
         """

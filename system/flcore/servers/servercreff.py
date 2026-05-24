@@ -17,7 +17,11 @@ from torch.utils.data import Dataset, DataLoader
 
 from flcore.servers.serverbase import Server
 from flcore.clients.clientcreff import clientCREFF, Local
+<<<<<<< HEAD
 from flcore.trainmodel.resnet_cifar import resnet8_cifar, resnet18_cifar, resnet20_cifar
+=======
+from flcore.trainmodel.resnet_cifar import resnet8_cifar
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
 from utils.data_utils import read_client_data
 
 
@@ -93,6 +97,7 @@ class Global(object):
                  num_classes: int,
                  device: str,
                  args,
+<<<<<<< HEAD
                  num_of_feature,
                  model_type='ResNet8'):
         self.device = device
@@ -102,6 +107,11 @@ class Global(object):
         self.num_classes = num_classes
         self.num_of_feature = num_of_feature
 
+=======
+                 num_of_feature):
+        self.device = device
+        self.num_classes = num_classes
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
         self.fedavg_acc = []
         self.fedavg_many = []
         self.fedavg_medium = []
@@ -110,6 +120,7 @@ class Global(object):
         self.ft_many = []
         self.ft_medium = []
         self.ft_few = []
+<<<<<<< HEAD
 
         # Support flexible model selection
         if model_type in ['ResNet18', 'resnet18']:
@@ -132,6 +143,17 @@ class Global(object):
         self.optimizer_feature = SGD([self.feature_syn, ], lr=args.lr_feature)
         self.criterion = CrossEntropyLoss().to(args.device)
         self.feature_net = nn.Linear(self.feature_dim, num_classes).to(args.device)
+=======
+        self.num_of_feature = num_of_feature
+        self.feature_syn = torch.randn(size=(args.num_classes * self.num_of_feature, 256), dtype=torch.float,
+                                       requires_grad=True, device=args.device)
+        self.label_syn = torch.tensor([np.ones(self.num_of_feature) * i for i in range(args.num_classes)], dtype=torch.long,
+                                      requires_grad=False, device=args.device).view(-1)
+        self.optimizer_feature = SGD([self.feature_syn, ], lr=args.lr_feature)
+        self.criterion = CrossEntropyLoss().to(args.device)
+        self.syn_model = resnet8_cifar(num_classes=args.num_classes, scaling=4).to(device)
+        self.feature_net = nn.Linear(256, num_classes).to(args.device)
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
 
     def update_feature_syn(self, args, global_params, list_clients_gradient):
         feature_net_params = self.feature_net.state_dict()
@@ -166,7 +188,11 @@ class Global(object):
             loss_feature = torch.tensor(0.0).to(args.device)
             for c in range(args.num_classes):
                 if len(gw_real_avg[c]) != 0:
+<<<<<<< HEAD
                     feature_syn = self.feature_syn[c * self.num_of_feature:(c + 1) * self.num_of_feature].reshape((self.num_of_feature, self.feature_dim))
+=======
+                    feature_syn = self.feature_syn[c * self.num_of_feature:(c + 1) * self.num_of_feature].reshape((self.num_of_feature, 256))
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
                     lab_syn = torch.ones((self.num_of_feature,), device=args.device, dtype=torch.long) * c
                     output_syn = self.feature_net(feature_syn)
                     loss_syn = self.criterion(output_syn, lab_syn)
@@ -180,7 +206,11 @@ class Global(object):
         feature_syn_train_ft = copy.deepcopy(self.feature_syn.detach())
         label_syn_train_ft = copy.deepcopy(self.label_syn.detach())
         dst_train_syn_ft = TensorDataset(feature_syn_train_ft, label_syn_train_ft)
+<<<<<<< HEAD
         ft_model = nn.Linear(self.feature_dim, self.num_classes).to(args.device)
+=======
+        ft_model = nn.Linear(256, self.num_classes).to(args.device)
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
         optimizer_ft_net = SGD(ft_model.parameters(), lr=args.lr_net)
         ft_model.train()
         for epoch in range(args.crt_epoch):
@@ -241,6 +271,7 @@ class FedCReFF(Server):
         self._set_creff_defaults(args)
         super().__init__(args, times)
         
+<<<<<<< HEAD
         # CReFF-specific parameters (ensure integers where needed)
         self.lr_feature = args.lr_feature
         self.lr_net = args.lr_net
@@ -252,6 +283,19 @@ class FedCReFF(Server):
         self.lr_local_training = args.lr_local_training
         self.batch_size_local_training = int(args.batch_size_local_training)
         self.num_epochs_local_training = int(args.num_epochs_local_training)
+=======
+        # CReFF-specific parameters
+        self.lr_feature = args.lr_feature
+        self.lr_net = args.lr_net
+        self.num_of_feature = args.num_of_feature
+        self.match_epoch = args.match_epoch
+        self.crt_epoch = args.crt_epoch
+        self.batch_real = args.batch_real
+        self.dis_metric = args.dis_metric
+        self.lr_local_training = args.lr_local_training
+        self.batch_size_local_training = args.batch_size_local_training
+        self.num_epochs_local_training = args.num_epochs_local_training
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
         
         self.set_slow_clients()
         self.set_clients(clientCREFF)
@@ -266,16 +310,21 @@ class FedCReFF(Server):
             for _, label in train_data:
                 class_counts[int(label)] = class_counts.get(int(label), 0) + 1
             self.original_dict_per_client[client_id] = class_counts
+<<<<<<< HEAD
 
         # Support flexible model selection
         model_type = getattr(args, 'model', 'ResNet8')
         if not isinstance(model_type, str):
             model_type = 'ResNet8'  # Default if model is already instantiated
 
+=======
+        
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
         self.creff_global = Global(
             num_classes=self.num_classes,
             device=self.device,
             args=args,
+<<<<<<< HEAD
             num_of_feature=self.num_of_feature,
             model_type=model_type
         )
@@ -286,6 +335,12 @@ class FedCReFF(Server):
         # Get feature_dim from Global
         self.feature_dim = self.creff_global.feature_dim
         temp_model = nn.Linear(self.feature_dim, int(self.num_classes)).to(self.device)
+=======
+            num_of_feature=self.num_of_feature
+        )
+        
+        temp_model = nn.Linear(256, self.num_classes).to(self.device)
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
         self.syn_params = temp_model.state_dict()
         
         print(f"\n{'='*60}")
@@ -311,7 +366,11 @@ class FedCReFF(Server):
         if not hasattr(args, 'lr_local_training') or args.lr_local_training is None:
             args.lr_local_training = 0.1
         if not hasattr(args, 'lr_feature') or args.lr_feature is None:
+<<<<<<< HEAD
             args.lr_feature = 0.1  # Source code default
+=======
+            args.lr_feature = 1.0
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
         if not hasattr(args, 'lr_net') or args.lr_net is None:
             args.lr_net = 0.01
         if not hasattr(args, 'num_of_feature') or args.num_of_feature is None:
@@ -325,6 +384,7 @@ class FedCReFF(Server):
         if not hasattr(args, 'batch_size_local_training') or args.batch_size_local_training is None:
             args.batch_size_local_training = args.batch_size if hasattr(args, 'batch_size') else 32
         if not hasattr(args, 'num_epochs_local_training') or args.num_epochs_local_training is None:
+<<<<<<< HEAD
             args.num_epochs_local_training = 10  # Source code default
         if not hasattr(args, 'dis_metric') or args.dis_metric is None:
             args.dis_metric = 'ours'
@@ -338,6 +398,12 @@ class FedCReFF(Server):
             from flcore.trainmodel.param_aug import ParamDiffAug
             args.dsa_param = ParamDiffAug()
 
+=======
+            args.num_epochs_local_training = args.local_epochs if hasattr(args, 'local_epochs') else 5
+        if not hasattr(args, 'dis_metric') or args.dis_metric is None:
+            args.dis_metric = 'ours'
+
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
     def train(self):
         """Main training loop"""
         random_state = np.random.RandomState(7)

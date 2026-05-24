@@ -44,8 +44,11 @@ class clientProx(Client):
                 if self.train_slow:
                     time.sleep(0.1 * np.abs(np.random.rand()))
                 output = self.model(x)
+<<<<<<< HEAD
                 if isinstance(output, tuple):
                     output = output[1]  # (feature, logit) -> logit
+=======
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
                 loss = self.loss(output, y)
                 self.optimizer.zero_grad()
                 loss.backward()
@@ -81,8 +84,11 @@ class clientProx(Client):
                     x = x.to(self.device)
                 y = y.to(self.device)
                 output = self.model(x)
+<<<<<<< HEAD
                 if isinstance(output, tuple):
                     output = output[1]  # (feature, logit) -> logit
+=======
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
                 loss = self.loss(output, y)
 
                 gm = torch.cat([p.data.view(-1) for p in self.global_params], dim=0)

@@ -6,7 +6,10 @@ import torch
 import torchvision
 import torchvision.transforms as transforms
 from utils.dataset_utils import check, separate_data, split_data, save_file, imbalance_factor
+<<<<<<< HEAD
 import utils.dataset_utils as du
+=======
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
 
 
 random.seed(1)
@@ -16,7 +19,11 @@ if torch.cuda.is_available():
     torch.cuda.manual_seed(1)
     torch.cuda.manual_seed_all(1)
 num_clients = 20
+<<<<<<< HEAD
 dir_path = "Cifar100/"  # will be overridden dynamically in __main__
+=======
+dir_path = "Cifar100/"
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
 
 
 # Allocate data to users
@@ -57,6 +64,7 @@ def generate_dataset(dir_path, num_clients, niid, balance, partition, longtail=F
     #     idx = dataset_label == i
     #     dataset.append(dataset_image[idx])
 
+<<<<<<< HEAD
     # 设置长尾分布的不平衡因子
     if imb_factor is not None:
         imb_factor_value = imb_factor
@@ -69,6 +77,14 @@ def generate_dataset(dir_path, num_clients, niid, balance, partition, longtail=F
     train_data, test_data = split_data(X, y)
     save_file(config_path, train_path, test_path, train_data, test_data, num_clients, num_classes,
         statistic, niid, balance, partition, longtail, longtail_type, imb_factor_value)
+=======
+    X, y, statistic = separate_data((dataset_image, dataset_label), num_clients, num_classes, 
+                                    niid, balance, partition, class_per_client=10, longtail=longtail, 
+                                    longtail_type=longtail_type, imbalance_factor=imb_factor, train_path=train_path)
+    train_data, test_data = split_data(X, y)
+    save_file(config_path, train_path, test_path, train_data, test_data, num_clients, num_classes, 
+        statistic, niid, balance, partition, longtail, longtail_type)
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
     
     # ========== Generate Global Test Set ==========
     # Save complete original test set (10000 samples, balanced distribution)
@@ -88,15 +104,26 @@ if __name__ == "__main__":
     niid = True if sys.argv[1] == "noniid" else False
     balance = True if sys.argv[2] == "balance" else False
     partition = sys.argv[3] if sys.argv[3] != "-" else None
+<<<<<<< HEAD
 
+=======
+    
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
     # 长尾分布参数
     longtail = False
     longtail_type = None
     imb_factor = None
+<<<<<<< HEAD
 
     if len(sys.argv) > 4:
         longtail = True if sys.argv[4] == "longtail" else False
 
+=======
+    
+    if len(sys.argv) > 4:
+        longtail = True if sys.argv[4] == "longtail" else False
+        
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
         if longtail and len(sys.argv) > 5:
             # 长尾类型映射
             longtail_type_map = {
@@ -107,6 +134,7 @@ if __name__ == "__main__":
             }
             user_type = sys.argv[5] if sys.argv[5] in ["global", "local", "mixed", "-"] else "global"
             longtail_type = longtail_type_map[user_type]
+<<<<<<< HEAD
 
             if len(sys.argv) > 6:
                 try:
@@ -154,6 +182,18 @@ if __name__ == "__main__":
         dir_name = f"Cifar100-NC{num_clients}"
     dir_path = os.path.join(script_dir, dir_name) + os.sep
 
+=======
+            
+            if len(sys.argv) > 6:
+                try:
+                    imb_factor = float(sys.argv[6])
+                    if imb_factor <= 0 or imb_factor > 1:
+                        print("Warning: Imbalance factor should be in (0, 1], using default value.")
+                        imb_factor = None
+                except ValueError:
+                    print("Warning: Invalid imbalance factor, using default value.")
+    
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
     print(f"Generating CIFAR-100 dataset with settings:")
     print(f"  - Non-IID: {niid}")
     print(f"  - Balanced: {balance}")
@@ -161,9 +201,13 @@ if __name__ == "__main__":
     print(f"  - Long-tail: {longtail}")
     print(f"  - Long-tail Type: {user_type if longtail and 'user_type' in locals() else '-'}")
     print(f"  - Imbalance Factor: {imb_factor if imb_factor is not None else imbalance_factor}")
+<<<<<<< HEAD
     print(f"  - Alpha: {du.alpha}")
     print(f"  - Output Dir: {dir_path}")
 
     print(f"[debug] alpha={du.alpha}, num_clients={num_clients}")
 
+=======
+    
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
     generate_dataset(dir_path, num_clients, niid, balance, partition, longtail, longtail_type, imb_factor)

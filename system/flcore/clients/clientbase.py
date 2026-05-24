@@ -116,10 +116,13 @@ class Client(object):
                 y = y.to(self.device)
                 output = self.model(x)
 
+<<<<<<< HEAD
                 # Handle models that return (feature, logit) tuple
                 if isinstance(output, tuple):
                     output = output[1]  # Use logit for classification
 
+=======
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
                 # 诊断：检测输出中是否存在 NaN/Inf
                 if not torch.isfinite(output).all():
                     nonfinite_output_batches += 1
@@ -185,9 +188,12 @@ class Client(object):
                     x = x.to(self.device)
                 y = y.to(self.device)
                 output = self.model(x)
+<<<<<<< HEAD
                 # Handle models that return (feature, logit) tuple
                 if isinstance(output, tuple):
                     output = output[1]  # Use logit for loss computation
+=======
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
                 loss = self.loss(output, y)
                 train_num += y.shape[0]
                 losses += loss.item() * y.shape[0]

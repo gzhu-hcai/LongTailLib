@@ -103,9 +103,12 @@ class ClientGRAB(Client):
                 
                 # Source: update_baseline.py line 116-117
                 feat = self.model.base(images)
+<<<<<<< HEAD
                 # Handle models that return (feature, logit) tuple
                 if isinstance(feat, tuple):
                     feat = feat[0]
+=======
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
                 logits = self.local_classifier(feat)
                 
                 # Source: update_baseline.py line 118
@@ -139,11 +142,16 @@ class ClientGRAB(Client):
         for images, labels in test_loader:
             images = images.to(self.device)
             labels = labels.to(self.device).long()
+<<<<<<< HEAD
 
             feat = self.model.base(images)
             # Handle models that return (feature, logit) tuple
             if isinstance(feat, tuple):
                 feat = feat[0]
+=======
+            
+            feat = self.model.base(images)
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
             if self.local_classifier is not None:
                 outputs = self.local_classifier(feat)
             else:

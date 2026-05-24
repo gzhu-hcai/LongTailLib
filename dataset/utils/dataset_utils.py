@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 
 
 batch_size = 10
+<<<<<<< HEAD
 train_ratio = 0.75 # merge original training set and test set, then split it manually.
 alpha = 0.5 # User-facing alpha ∈ (0, 1]: 0.1 = strong non-IID, 1.0 = IID
 imbalance_factor = 50 # long-tail IF (>=1): n_max / n_min ratio. IF=50 means head class has 50x samples of tail class
@@ -31,6 +32,11 @@ def convert_alpha_to_dirichlet(user_alpha):
         return 100.0  # IID: near-uniform distribution
     else:
         return max(0.01, user_alpha)  # Ensure positive, use directly
+=======
+train_ratio = 0.75 # merge original training set and test set, then split it manually. 
+alpha = 0.1 # for Dirichlet distribution. 100 for exdir
+imbalance_factor = 0.1 # long-tail IF (>=1 recommended). If <1, treated as legacy param and auto-converted; larger value => more imbalanced
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
 
 def check(config_path, train_path, test_path, num_clients, niid=False, 
         balance=True, partition=None, longtail=False, longtail_type=None):
@@ -61,12 +67,20 @@ def check(config_path, train_path, test_path, num_clients, niid=False,
 
 # ===== Long-tail helpers (IF >= 1, legacy <1 auto-converted) =====
 
+<<<<<<< HEAD
 def create_longtail_distribution(dataset, num_classes, imbalance_factor=50, distribution='exponential'):
+=======
+def create_longtail_distribution(dataset, num_classes, imbalance_factor=0.1, distribution='exponential'):
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
     """创建长尾分布的全局类别样本配额
     Args:
         dataset: (dataset_content, dataset_label)
         num_classes: 类别数
+<<<<<<< HEAD
         imbalance_factor: IF = n_max / n_min (>=1)。IF=50 表示头类样本数是尾类的50倍
+=======
+        imbalance_factor: IF = n_max / n_min (>=1)。若 <1，按旧语义（λ样式）转换为 IF。
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
         distribution: 'exponential' 或 'power_law'
     Returns:
         dict: {class_idx: np.ndarray(sample_indices)}
@@ -80,11 +94,27 @@ def create_longtail_distribution(dataset, num_classes, imbalance_factor=50, dist
 
     max_samples_available = max((len(indices_per_class[i]) for i in range(num_classes)), default=0)
 
+<<<<<<< HEAD
     # IF must be >= 1 (ratio of max to min samples)
     if imbalance_factor is None or imbalance_factor < 1:
         IF = 1.0  # No imbalance
     else:
         IF = float(imbalance_factor)
+=======
+    # 规范化为 IF
+    if imbalance_factor is None:
+        IF = 1.0
+    elif imbalance_factor >= 1:
+        IF = float(imbalance_factor)
+    else:
+        C = max(2, num_classes)
+        if distribution == 'exponential':
+            IF = float(np.exp((C - 1) / (imbalance_factor * C)))
+        elif distribution == 'power_law':
+            IF = float(C ** (1.0 / (imbalance_factor * C)))
+        else:
+            raise ValueError(f"Unsupported distribution: {distribution}")
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
 
     class_samples = {}
     if num_classes <= 1:
@@ -114,6 +144,7 @@ def create_longtail_distribution(dataset, num_classes, imbalance_factor=50, dist
     return class_samples
 
 
+<<<<<<< HEAD
 def imbalanced_split(dataset, num_clients, num_classes, longtail_type='global_longtail',
                     imbalance_factor=50, distribution='exponential', alpha=0.5):
     """按不同长尾类型将数据索引分配至客户端
@@ -125,6 +156,15 @@ def imbalanced_split(dataset, num_clients, num_classes, longtail_type='global_lo
     # Convert user-facing alpha to Dirichlet parameter
     dir_alpha = convert_alpha_to_dirichlet(alpha)
 
+=======
+def imbalanced_split(dataset, num_clients, num_classes, longtail_type='global_longtail', 
+                    imbalance_factor=0.1, distribution='exponential', alpha=0.1):
+    """按不同长尾类型将数据索引分配至客户端
+    longtail_type: 'global_longtail' | 'local_longtail' | 'mixed_longtail'
+    """
+    dataset_content, dataset_label = dataset
+
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
     if longtail_type == 'global_longtail':
         # 先在全局构造长尾配额, 再用 Dirichlet 分给各客户端
         class_samples = create_longtail_distribution(dataset, num_classes, imbalance_factor, distribution)
@@ -134,6 +174,10 @@ def imbalanced_split(dataset, num_clients, num_classes, longtail_type='global_lo
             if len(indices) == 0:
                 continue
             np.random.shuffle(indices)
+<<<<<<< HEAD
+=======
+            dir_alpha = alpha if alpha is not None else 0.1
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
             proportions = np.random.dirichlet(np.repeat(dir_alpha, num_clients))
             split_points = (np.cumsum(proportions) * len(indices)).astype(int)[:-1]
             splits = np.split(indices, split_points)
@@ -149,7 +193,11 @@ def imbalanced_split(dataset, num_clients, num_classes, longtail_type='global_lo
         for k in range(K):
             idx_k = np.where(dataset_label == k)[0]
             np.random.shuffle(idx_k)
+<<<<<<< HEAD
             proportions = np.random.dirichlet(np.repeat(max(dir_alpha, 1e-6) * 10, num_clients))
+=======
+            proportions = np.random.dirichlet(np.repeat(max(alpha, 1e-6) * 10, num_clients))
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
             proportions = proportions / proportions.sum()
             cuts = (np.cumsum(proportions) * len(idx_k)).astype(int)[:-1]
             splits = np.split(idx_k, cuts)
@@ -164,12 +212,27 @@ def imbalanced_split(dataset, num_clients, num_classes, longtail_type='global_lo
                 continue
             order = np.random.permutation(uniq)
             total = len(client_data)
+<<<<<<< HEAD
             # IF must be >= 1
             Cc = len(order)
             if imbalance_factor is None or imbalance_factor < 1:
                 eff_if = 1.0
             else:
                 eff_if = float(imbalance_factor)
+=======
+            # 以 IF 生成指数权重, 归一后分配目标样本数
+            Cc = len(order)
+            if imbalance_factor is None:
+                eff_if = 1.0
+            elif imbalance_factor >= 1:
+                eff_if = float(imbalance_factor)
+            else:
+                C = max(2, num_classes)
+                if distribution == 'exponential':
+                    eff_if = float(np.exp((C - 1) / (imbalance_factor * C)))
+                else:
+                    eff_if = float(C ** (1.0 / (imbalance_factor * C)))
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
             k = np.log(max(eff_if, 1.0)) / max(Cc - 1, 1)
             weights = np.array([np.exp(-k * i) for i in range(Cc)], dtype=float)
             weights = weights / (weights.sum() + 1e-12)
@@ -204,11 +267,25 @@ def imbalanced_split(dataset, num_clients, num_classes, longtail_type='global_lo
         # 长尾客户端
         for cid in longtail_clients:
             order = np.random.permutation(num_classes)
+<<<<<<< HEAD
             # IF must be >= 1
             if imbalance_factor is None or imbalance_factor < 1:
                 eff_if = 1.0
             else:
                 eff_if = float(imbalance_factor)
+=======
+            # 目标按指数权重分配
+            if imbalance_factor is None:
+                eff_if = 1.0
+            elif imbalance_factor >= 1:
+                eff_if = float(imbalance_factor)
+            else:
+                C = max(2, num_classes)
+                if distribution == 'exponential':
+                    eff_if = float(np.exp((C - 1) / (imbalance_factor * C)))
+                else:
+                    eff_if = float(C ** (1.0 / (imbalance_factor * C)))
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
             k = np.log(max(eff_if, 1.0)) / max(num_classes - 1, 1)
             weights = np.array([np.exp(-k * i) for i in range(num_classes)], dtype=float)
             weights = weights / (weights.sum() + 1e-12)
@@ -447,12 +524,35 @@ def separate_data(data, num_clients, num_classes, niid=False, balance=False, par
         print(f"Distribution Function: {distribution}")
         print(f"Imbalance Factor (input): {imbalance_factor}")
         
+<<<<<<< HEAD
         # 计算并打印最终生效的 IF
         if imbalance_factor is None or imbalance_factor < 1:
             _eff_if = 1.0
         else:
             _eff_if = float(imbalance_factor)
         print(f"Effective IF (used): {_eff_if:.1f}")
+=======
+        # 计算并打印最终生效的 IF（兼容旧参数转换）
+        def _effective_IF(val, dist, C):
+            if val is None:
+                return 1.0
+            if val >= 1:
+                return float(val)
+            Cx = max(2, C)
+            if dist == 'exponential':
+                return float(np.exp((Cx - 1) / (val * Cx)))
+            elif dist == 'power_law':
+                return float((Cx) ** (1.0 / (val * Cx)))
+            else:
+                return 1.0
+        _eff_if = _effective_IF(imbalance_factor, distribution, num_classes)
+        if imbalance_factor is None:
+            print(f"Effective IF (used): {_eff_if:.4f} (default)")
+        elif imbalance_factor >= 1:
+            print(f"Effective IF (used): {_eff_if:.4f} (input IF)")
+        else:
+            print(f"Effective IF (used): {_eff_if:.4f} (converted from legacy param {imbalance_factor})")
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
     
     # 计算全局类别分布
     global_class_counts = np.zeros(num_classes)

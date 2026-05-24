@@ -69,7 +69,12 @@ class ClientFEDIC(Client):
             data_loader = DataLoader(
                 dataset=train_data,
                 batch_size=self.batch_size,
+<<<<<<< HEAD
                 shuffle=True
+=======
+                shuffle=True,
+                drop_last=True
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
             )
             
             for data_batch in data_loader:
@@ -95,5 +100,39 @@ class ClientFEDIC(Client):
         """
         return copy.deepcopy(self.model.state_dict())
     
+<<<<<<< HEAD
     # test_metrics() and train_metrics() inherited from clientbase
     # clientbase already handles (feature, logit) tuple at line 120-121
+=======
+    def test_metrics_local(self):
+        """
+        Compute test metrics on local test data.
+        Returns dict with num_samples, num_correct, loss.
+        """
+        self.model.eval()
+        
+        test_data = read_client_data(self.dataset, self.id, is_train=False)
+        test_loader = DataLoader(test_data, batch_size=self.batch_size, shuffle=False)
+        
+        num_correct = 0
+        num_samples = 0
+        total_loss = 0.0
+        
+        with torch.no_grad():
+            for images, labels in test_loader:
+                images, labels = images.to(self.device), labels.to(self.device)
+                _, outputs = self.model(images)
+                
+                loss = self.ce_loss(outputs, labels)
+                total_loss += loss.item() * labels.size(0)
+                
+                _, predicted = torch.max(outputs, 1)
+                num_correct += (predicted == labels).sum().item()
+                num_samples += labels.size(0)
+        
+        return {
+            'num_samples': num_samples,
+            'num_correct': num_correct,
+            'loss': total_loss / num_samples if num_samples > 0 else 0.0
+        }
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d

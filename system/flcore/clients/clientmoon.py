@@ -36,6 +36,7 @@ class clientMOON(Client):
                 y = y.to(self.device)
                 if self.train_slow:
                     time.sleep(0.1 * np.abs(np.random.rand()))
+<<<<<<< HEAD
 
                 # 获取表征和输出
                 out = self.model(x)
@@ -60,6 +61,14 @@ class clientMOON(Client):
                     if isinstance(rep_global, tuple):
                         rep_global = rep_global[0]
 
+=======
+                rep = self.model.base(x)
+                output = self.model.head(rep)
+                loss = self.loss(output, y)
+
+                rep_old = self.old_model.base(x).detach()
+                rep_global = self.global_model.base(x).detach()
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
                 loss_con = - torch.log(torch.exp(F.cosine_similarity(rep, rep_global) / self.tau) / (torch.exp(F.cosine_similarity(rep, rep_global) / self.tau) + torch.exp(F.cosine_similarity(rep, rep_old) / self.tau)))
                 loss += self.mu * torch.mean(loss_con)
 
@@ -98,6 +107,7 @@ class clientMOON(Client):
                 else:
                     x = x.to(self.device)
                 y = y.to(self.device)
+<<<<<<< HEAD
 
                 # 获取表征和输出
                 out = self.model(x)
@@ -121,6 +131,14 @@ class clientMOON(Client):
                 if isinstance(rep_global, tuple):
                     rep_global = rep_global[0]
 
+=======
+                rep = self.model.base(x)
+                output = self.model.head(rep)
+                loss = self.loss(output, y)
+
+                rep_old = self.old_model.base(x).detach()
+                rep_global = self.global_model.base(x).detach()
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
                 loss_con = - torch.log(torch.exp(F.cosine_similarity(rep, rep_global) / self.tau) / (torch.exp(F.cosine_similarity(rep, rep_global) / self.tau) + torch.exp(F.cosine_similarity(rep, rep_old) / self.tau)))
                 loss += self.mu * torch.mean(loss_con)
                 train_num += y.shape[0]

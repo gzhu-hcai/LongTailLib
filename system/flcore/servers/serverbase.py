@@ -68,11 +68,16 @@ class Server(object):
         self.new_clients = []
         self.eval_new_clients = False
         self.fine_tuning_epoch_new = args.fine_tuning_epoch_new
+<<<<<<< HEAD
 
+=======
+        
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
         # Global test dataset for true global evaluation (aligned with source code)
         self.global_testloader = None
         self.load_global_test_data()
 
+<<<<<<< HEAD
         # 3-Shot evaluation: head/middle/tail class split
         self.three_shot_dict = None
         self.global_train_distribution = None
@@ -147,6 +152,8 @@ class Server(object):
 
         return three_shot_dict
 
+=======
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
     def load_global_test_data(self):
         """
         Load complete global test dataset for true global evaluation.
@@ -289,13 +296,18 @@ class Server(object):
                 tot_samples += client.train_samples
                 self.uploaded_ids.append(client.id)
                 self.uploaded_weights.append(client.train_samples)
+<<<<<<< HEAD
                 # CRITICAL FIX: Deep copy client model to avoid reference issues
                 self.uploaded_models.append(copy.deepcopy(client.model))
+=======
+                self.uploaded_models.append(client.model)
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
         for i, w in enumerate(self.uploaded_weights):
             self.uploaded_weights[i] = w / tot_samples
 
     def aggregate_parameters(self):
         assert (len(self.uploaded_models) > 0)
+<<<<<<< HEAD
 
         # Initialize global model from first client
         self.global_model = copy.deepcopy(self.uploaded_models[0])
@@ -317,16 +329,29 @@ class Server(object):
         for w, client_model in zip(self.uploaded_weights, self.uploaded_models):
             self.add_buffers(w, client_model)
 
+=======
+        # 原始：直接按收到的客户端模型与样本权重做加权平均
+        self.global_model = copy.deepcopy(self.uploaded_models[0])
+        for param in self.global_model.parameters():
+            param.data.zero_()
+
+        for w, client_model in zip(self.uploaded_weights, self.uploaded_models):
+            self.add_parameters(w, client_model)
+
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
     def add_parameters(self, w, client_model):
         for server_param, client_param in zip(self.global_model.parameters(), client_model.parameters()):
             server_param.data += client_param.data.clone() * w
 
+<<<<<<< HEAD
     def add_buffers(self, w, client_model):
         """Aggregate buffers (e.g., BatchNorm running_mean/running_var) with weighted average"""
         for server_buffer, client_buffer in zip(self.global_model.buffers(), client_model.buffers()):
             if server_buffer.dtype in [torch.float32, torch.float64, torch.float16]:
                 server_buffer.data += client_buffer.data.clone() * w
 
+=======
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
     def save_global_model(self):
         # 上游风格：统一保存到 system/models/<algorithm>_server.pt
         base_dir = os.path.dirname(os.path.abspath(__file__))
@@ -374,6 +399,7 @@ class Server(object):
                 hf.create_dataset('rs_train_loss', data=self.rs_train_loss)
                 if len(self.rs_global_acc):
                     hf.create_dataset('rs_global_acc', data=self.rs_global_acc)
+<<<<<<< HEAD
                 # Save 3-shot accuracy data
                 if len(self.rs_head_acc):
                     hf.create_dataset('rs_head_acc', data=self.rs_head_acc)
@@ -381,6 +407,8 @@ class Server(object):
                     hf.create_dataset('rs_middle_acc', data=self.rs_middle_acc)
                 if len(self.rs_tail_acc):
                     hf.create_dataset('rs_tail_acc', data=self.rs_tail_acc)
+=======
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
 
             # Generate and save Test Accuracy curve as SVG
             try:
@@ -441,6 +469,7 @@ class Server(object):
             except Exception as e:
                 print("Warning: failed to save Global Test Accuracy curve:", e)
 
+<<<<<<< HEAD
             # Generate and save 3-Shot Accuracy curve as SVG (if available)
             try:
                 if len(self.rs_head_acc) and len(self.rs_middle_acc) and len(self.rs_tail_acc):
@@ -473,6 +502,8 @@ class Server(object):
             except Exception as e:
                 print("Warning: failed to save 3-Shot Accuracy curve:", e)
 
+=======
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
     def save_item(self, item, item_name):
         if not os.path.exists(self.save_folder_name):
             os.makedirs(self.save_folder_name)
@@ -534,6 +565,7 @@ class Server(object):
         """
         Compute global model accuracy on the COMPLETE global test set.
         This is aligned with source code evaluation (e.g., CReFF, CLIP2FL, FedGraB, FedNH).
+<<<<<<< HEAD
 
         Returns:
             tuple: (overall_accuracy, three_shot_acc_dict) or (None, None) if not available
@@ -541,10 +573,20 @@ class Server(object):
         if self.global_testloader is None:
             return None, None
 
+=======
+        
+        Returns:
+            float: accuracy on global test set, or None if not available
+        """
+        if self.global_testloader is None:
+            return None
+        
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
         try:
             self.global_model.eval()
             correct = 0
             total = 0
+<<<<<<< HEAD
 
             # 3-shot tracking
             correct_3shot = {"head": 0, "middle": 0, "tail": 0}
@@ -554,10 +596,18 @@ class Server(object):
                 images = images.to(self.device)
                 labels = labels.to(self.device)
 
+=======
+            
+            for images, labels in self.global_testloader:
+                images = images.to(self.device)
+                labels = labels.to(self.device)
+                
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
                 outputs = self.global_model(images)
                 # Handle models that return (feature, output) tuple
                 if isinstance(outputs, tuple):
                     _, outputs = outputs
+<<<<<<< HEAD
 
                 _, predicted = torch.max(outputs, 1)
                 total += labels.size(0)
@@ -590,6 +640,19 @@ class Server(object):
         except Exception as e:
             print(f"Warning: failed to compute global test accuracy: {e}")
             return None, None
+=======
+                
+                _, predicted = torch.max(outputs, 1)
+                total += labels.size(0)
+                correct += (predicted == labels).sum().item()
+            
+            accuracy = correct / total
+            return accuracy
+            
+        except Exception as e:
+            print(f"Warning: failed to compute global test accuracy: {e}")
+            return None
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
 
     # evaluate selected clients
     def evaluate(self, acc=None, loss=None):
@@ -601,12 +664,20 @@ class Server(object):
         train_loss = sum(stats_train[2])*1.0 / sum(stats_train[1])
         accs = [a / n for a, n in zip(stats[2], stats[1])]
         aucs = [a / n for a, n in zip(stats[3], stats[1])]
+<<<<<<< HEAD
 
+=======
+        
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
         if acc == None:
             self.rs_test_acc.append(test_acc)
         else:
             acc.append(test_acc)
+<<<<<<< HEAD
 
+=======
+        
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
         if loss == None:
             self.rs_train_loss.append(train_loss)
         else:
@@ -618,6 +689,7 @@ class Server(object):
         # self.print_(test_acc, train_acc, train_loss)
         print("Std Test Accuracy: {:.4f}".format(np.std(accs)))
         print("Std Test AUC: {:.4f}".format(np.std(aucs)))
+<<<<<<< HEAD
 
         # 计算并打印全局平均测试准确率和3-Shot准确率
         g_acc, three_shot_acc = self.compute_global_test_accuracy()
@@ -632,6 +704,13 @@ class Server(object):
                 self.rs_tail_acc.append(three_shot_acc['tail'])
                 print("Global 3-Shot Acc: [head: {:.4f}, middle: {:.4f}, tail: {:.4f}]".format(
                     three_shot_acc['head'], three_shot_acc['middle'], three_shot_acc['tail']))
+=======
+        # 计算并打印全局平均测试准确率（如可用）
+        g_acc = self.compute_global_test_accuracy()
+        if g_acc is not None:
+            self.rs_global_acc.append(g_acc)
+            print("Global Averaged Test Accuracy: {:.4f}".format(g_acc))
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
         else:
             # If global accuracy not available, use local accuracy as fallback
             self.rs_global_acc.append(test_acc)

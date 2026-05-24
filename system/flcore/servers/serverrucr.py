@@ -84,7 +84,11 @@ class FedRUCR(Server):
     
     @staticmethod
     def register_cli_args(parser):
+<<<<<<< HEAD
         """Register RUCR-specific command line arguments (aligned with RUCR official README recommended values)"""
+=======
+        """Register RUCR-specific command line arguments (GitHub recommended settings)"""
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
         parser.add_argument('--crt_ep', type=int, default=20,
                             help='RUCR: Number of rounds for classifier re-training (default: 20)')
         parser.add_argument('--feat_loss_arg', type=float, default=0.15,
@@ -108,10 +112,17 @@ class FedRUCR(Server):
     
     def __init__(self, args, times):
         super().__init__(args, times)
+<<<<<<< HEAD
 
         # RUCR specific parameters (aligned with source code options.py defaults)
         self.crt_ep = getattr(args, 'crt_ep', 0)  # Number of rounds for classifier re-training
         self.feat_loss_arg = getattr(args, 'feat_loss_arg', 0.0)
+=======
+        
+        # RUCR specific parameters (GitHub recommended settings)
+        self.crt_ep = getattr(args, 'crt_ep', 20)  # Number of rounds for classifier re-training
+        self.feat_loss_arg = getattr(args, 'feat_loss_arg', 0.15)
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
         
         # Feature dimension from model
         self.feat_dim = self._get_feature_dim()
@@ -220,11 +231,16 @@ class FedRUCR(Server):
             self.receive_models()
             self.aggregate_parameters()
             
+<<<<<<< HEAD
             # Save fedavg_params for next round (source: main.py line 319)
             # Source: global_model.syn_model.load_state_dict(copy.deepcopy(fedavg_params))
             # The re-trained classifier is ONLY used for evaluation, not for next round
             fedavg_params = copy.deepcopy(self.global_model.state_dict())
             eval_params = copy.deepcopy(fedavg_params)
+=======
+            # Copy aggregated params for evaluation
+            eval_params = copy.deepcopy(self.global_model.state_dict())
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
             
             # Phase 4: Classifier re-training (in last crt_ep rounds)
             if self.crt_ep >= self.global_rounds - round_idx:
@@ -254,7 +270,11 @@ class FedRUCR(Server):
                             eval_params[name_param] = mixup_classifier['weight']
                             break
             
+<<<<<<< HEAD
             # Temporarily load eval_params for evaluation
+=======
+            # Load eval params for evaluation
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
             self.global_model.load_state_dict(eval_params)
             
             # Evaluate
@@ -262,9 +282,12 @@ class FedRUCR(Server):
                 print(f"\n-------------Round {round_idx}-------------")
                 self.evaluate()
             
+<<<<<<< HEAD
             # Restore fedavg_params for next round (source: main.py line 319)
             self.global_model.load_state_dict(fedavg_params)
             
+=======
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
             self.Budget.append(time.time() - s_t)
             print(f"------------------------- time cost ------------------------- {self.Budget[-1]}")
         
@@ -319,10 +342,89 @@ class FedRUCR(Server):
         self.global_model.load_state_dict(global_params)
 
     def evaluate(self, acc=None, loss=None):
+<<<<<<< HEAD
         """Sync all clients with current global_model before parent evaluation."""
         for client in self.clients:
             client.set_parameters(self.global_model)
         super().evaluate(acc, loss)
+=======
+        """Evaluate and print metrics"""
+        stats = self.test_metrics()
+        stats_train = self.train_metrics()
+
+        test_acc = sum(stats[2]) * 1.0 / sum(stats[1])
+        test_auc = sum(stats[3]) * 1.0 / len(stats[3])
+        train_loss = sum(stats_train[2]) * 1.0 / sum(stats_train[1])
+        
+        accs = [a / n for a, n in zip(stats[2], stats[1])]
+        aucs = stats[3]
+        
+        self.rs_test_acc.append(test_acc)
+        self.rs_test_auc.append(test_auc)
+        self.rs_train_loss.append(train_loss)
+
+        print(f"Averaged Train Loss: {train_loss:.4f}")
+        print(f"Local Averaged Test Accuracy: {test_acc:.4f}")
+        print(f"Averaged Test AUC: {test_auc:.4f}")
+        print(f"Std Test Accuracy: {np.std(accs):.4f}")
+        print(f"Std Test AUC: {np.std(aucs):.4f}")
+        
+        # Global evaluation
+        global_acc = self.global_eval()
+        self.rs_global_acc.append(global_acc)
+        print(f"Global Averaged Test Accuracy: {global_acc:.4f}")
+
+    def global_eval(self):
+        """Evaluate on global test set"""
+        if self.global_testloader is None:
+            return 0.0
+            
+        self.global_model.eval()
+        num_corrects = 0
+        total = 0
+        
+        with torch.no_grad():
+            for x, y in self.global_testloader:
+                x, y = x.to(self.device), y.to(self.device)
+                output = self.global_model(x)
+                
+                if isinstance(output, tuple):
+                    _, output = output
+                    
+                _, predicts = torch.max(output, -1)
+                num_corrects += (predicts == y).sum().item()
+                total += y.size(0)
+        
+        return num_corrects / total if total > 0 else 0.0
+
+    def test_metrics(self):
+        """Collect test metrics from all clients"""
+        num_samples = []
+        tot_correct = []
+        tot_auc = []
+        
+        for c in self.clients:
+            ct, ns, auc = c.test_metrics()
+            tot_correct.append(ct)
+            tot_auc.append(auc)
+            num_samples.append(ns)
+
+        ids = [c.id for c in self.clients]
+        return ids, num_samples, tot_correct, tot_auc
+
+    def train_metrics(self):
+        """Collect training metrics from selected clients"""
+        num_samples = []
+        losses = []
+        
+        for c in self.selected_clients:
+            cl, ns = c.train_metrics()
+            num_samples.append(ns)
+            losses.append(cl)
+
+        ids = [c.id for c in self.selected_clients]
+        return ids, num_samples, losses
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
 
 
 # Import needed for set_clients

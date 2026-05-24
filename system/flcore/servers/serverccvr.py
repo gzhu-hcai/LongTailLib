@@ -69,6 +69,7 @@ class Global(object):
 
     def cal_global_gd(self, c_mean, c_cov, c_length):
         """
+<<<<<<< HEAD
         Calculate global mean and covariance - source code line 141-179
         Uses the formula from the CCVR paper (Eq. 3 and 4)
         """
@@ -118,6 +119,44 @@ class Global(object):
         global_mean = {i: g_mean[i] for i in range(num_classes)}
         global_cov = {i: g_cov[i] for i in range(num_classes)}
 
+=======
+        Calculate global mean and covariance - source code line 143-175
+        Weighted average of local distributions
+        """
+        global_mean = {i: None for i in range(self.num_classes)}
+        global_cov = {i: None for i in range(self.num_classes)}
+        
+        for c in range(self.num_classes):
+            total_length = sum([c_length[client_id][c] for client_id in c_length])
+            
+            if total_length == 0:
+                # No data for this class across all clients
+                continue
+            
+            # Weighted mean
+            weighted_mean = None
+            for client_id in c_mean:
+                if c_length[client_id][c] > 0:
+                    weight = c_length[client_id][c] / total_length
+                    if weighted_mean is None:
+                        weighted_mean = np.array(c_mean[client_id][c]) * weight
+                    else:
+                        weighted_mean += np.array(c_mean[client_id][c]) * weight
+            
+            # Weighted covariance
+            weighted_cov = None
+            for client_id in c_cov:
+                if c_length[client_id][c] > 0:
+                    weight = c_length[client_id][c] / total_length
+                    if weighted_cov is None:
+                        weighted_cov = np.array(c_cov[client_id][c]) * weight
+                    else:
+                        weighted_cov += np.array(c_cov[client_id][c]) * weight
+            
+            global_mean[c] = weighted_mean
+            global_cov[c] = weighted_cov
+        
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
         return global_mean, global_cov
 
     def retrain_vr(self, vr, label, eval_vr, eval_label, classifier, conf):

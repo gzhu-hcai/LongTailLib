@@ -123,7 +123,10 @@ def ResNet20_FedETF(num_classes=10, device='cuda'):
     """
     ResNet20 for FedETF on CIFAR
     Architecture: [3, 3, 3] blocks = 6*3+2 = 20 layers
+<<<<<<< HEAD
     Feature dim: 64
+=======
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
     """
     return ResNet_cifar_FedETF(BasicBlock, [3, 3, 3], num_classes=num_classes, device=device)
 
@@ -132,6 +135,7 @@ def ResNet56_FedETF(num_classes=10, device='cuda'):
     """
     ResNet56 for FedETF on CIFAR
     Architecture: [9, 9, 9] blocks = 6*9+2 = 56 layers
+<<<<<<< HEAD
     Feature dim: 64
     """
     return ResNet_cifar_FedETF(BasicBlock, [9, 9, 9], num_classes=num_classes, device=device)
@@ -271,3 +275,7 @@ def ResNet18_FedETF(num_classes=10, device='cuda'):
     Feature dim: 512
     """
     return ResNet18_cifar_FedETF(num_classes=num_classes, device=device)
+=======
+    """
+    return ResNet_cifar_FedETF(BasicBlock, [9, 9, 9], num_classes=num_classes, device=device)
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d

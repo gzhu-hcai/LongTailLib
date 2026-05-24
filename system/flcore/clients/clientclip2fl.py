@@ -374,15 +374,24 @@ class clientCLIP2FL(Client):
     """
     def __init__(self, args, id, train_samples, test_samples, **kwargs):
         super().__init__(args, id, train_samples, test_samples, **kwargs)
+<<<<<<< HEAD
 
         self.args = args
         self.criterion = nn.CrossEntropyLoss().to(args.device)
         self.kd_criterion = KDLoss(T=getattr(args, 'T', 3.0)).to(args.device)
 
+=======
+        
+        self.args = args
+        self.criterion = nn.CrossEntropyLoss().to(args.device)
+        self.kd_criterion = KDLoss(T=getattr(args, 'T', 3.0)).to(args.device)
+        
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
         # DiffAugment parameters (aligned with source code options.py)
         self.dsa = getattr(args, 'dsa', True)  # Default True in source
         self.dsa_strategy = getattr(args, 'dsa_strategy', 'color_crop_cutout_flip_scale_rotate')
         self.dsa_param = ParamDiffAug()
+<<<<<<< HEAD
 
         # Get class composition from data
         self.class_compose = self._get_class_composition()
@@ -391,6 +400,14 @@ class clientCLIP2FL(Client):
         # Aligned with source code: CLIP loaded once in server, passed to local_train
         self.clip_model = None
         self.text_features = None
+=======
+        
+        # Get class composition from data
+        self.class_compose = self._get_class_composition()
+        
+        # Load CLIP model and text features
+        self.load_clip_and_text_features(args)
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
         
     def _get_class_composition(self):
         """
@@ -406,6 +423,7 @@ class clientCLIP2FL(Client):
                 class_counts[int(label)] += 1
         
         return class_counts
+<<<<<<< HEAD
 
     def set_clip_model(self, clip_model, text_features):
         """
@@ -415,6 +433,42 @@ class clientCLIP2FL(Client):
         self.clip_model = clip_model
         self.text_features = text_features
 
+=======
+    
+    def load_clip_and_text_features(self, args):
+        """
+        Load CLIP model and generate text features
+        """
+        try:
+            import clip
+            self.clip_model, self.clip_preprocess = clip.load('ViT-B/32', args.device)
+            self.clip_model.eval()
+            
+            # Get class names
+            if args.num_classes == 10:
+                label_name = ['airplane','automobile','bird','cat','deer','dog','frog','horse','ship','truck']
+            elif args.num_classes == 100:
+                label_name = [f'class {i}' for i in range(100)]
+            else:
+                label_name = [f'class {i}' for i in range(args.num_classes)]
+            
+            # Generate text features
+            text_inputs = clip.tokenize([f"a photo of a {c}" for c in label_name]).to(args.device)
+            with torch.no_grad():
+                text_features = self.clip_model.encode_text(text_inputs)
+            
+            text_features = text_features.float()
+            text_features /= text_features.norm(dim=-1, keepdim=True)
+            
+            self.text_features = text_features
+            print(f"[Client {self.id}] CLIP model loaded successfully")
+            
+        except Exception as e:
+            print(f"[Client {self.id}] Warning: CLIP not available ({e}). Proceeding without CLIP.")
+            self.clip_model = None
+            self.text_features = None
+    
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
     def compute_gradient(self, global_params, args):
         """
         Compute real feature gradients - aligned with source code

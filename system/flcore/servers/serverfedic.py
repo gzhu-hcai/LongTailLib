@@ -25,15 +25,24 @@ from torch import sigmoid, cat
 from torch.optim import SGD, Adam
 from torch.nn import CrossEntropyLoss
 from torch.nn.functional import softmax, log_softmax
+<<<<<<< HEAD
 from torch.utils.data import DataLoader, TensorDataset, Subset
 from tqdm import tqdm
 from torchvision import datasets as tv_datasets
 from torchvision import transforms as tv_transforms
+=======
+from torch.utils.data import DataLoader, TensorDataset
+from tqdm import tqdm
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
 
 from flcore.clients.clientfedic import ClientFEDIC
 from flcore.servers.serverbase import Server
 from utils.data_utils import read_client_data
+<<<<<<< HEAD
 from flcore.trainmodel.resnet_cifar import resnet8_cifar, resnet18_cifar, resnet20_cifar
+=======
+from flcore.trainmodel.resnet_cifar import resnet8_cifar
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
 
 
 class Ensemble_highway(nn.Module):
@@ -146,6 +155,7 @@ class FedIC(Server):
         
         # learning rate - source: line 28: lr_local_training=0.1
         args.local_learning_rate = getattr(args, 'fedic_lr_local', 0.1)
+<<<<<<< HEAD
 
         # num_online_clients - source: line 12: num_online_clients=8
         num_online_clients = getattr(args, 'fedic_num_online_clients', 8)
@@ -172,6 +182,22 @@ class FedIC(Server):
 
         super().__init__(args, times)
 
+=======
+        
+        # num_online_clients - source: line 12: num_online_clients=8
+        num_online_clients = getattr(args, 'fedic_num_online_clients', 8)
+        args.join_ratio = num_online_clients / args.num_clients
+        
+        # Use ResNet8 (scaling=4, feature_dim=256) - exact match with source
+        # Source: ResNet_cifar_feature(resnet_size=8, scaling=4, ...)
+        dataset_name = args.dataset.lower()
+        if 'cifar' in dataset_name:
+            print(f"\n[FedIC] Using ResNet8 (resnet_size=8, scaling=4, feature_dim=256)")
+            args.model = resnet8_cifar(num_classes=args.num_classes, scaling=4).to(args.device)
+        
+        super().__init__(args, times)
+        
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
         # FedIC hyperparameters - source: options.py
         self.lr_global_teaching = getattr(args, 'fedic_lr_global', 0.001)
         self.temperature = getattr(args, 'fedic_temperature', 2.0)
@@ -180,13 +206,21 @@ class FedIC(Server):
         self.mini_batch_size_unlabeled = getattr(args, 'fedic_mini_batch_size_unlabeled', 128)
         self.batch_size_test = getattr(args, 'batch_size_test', 500)
         self.num_online_clients = num_online_clients
+<<<<<<< HEAD
 
+=======
+        
+        # Feature dimension from model - ResNet8 with scaling=4 gives 256
+        self.feature_dim = 256
+        
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
         # Initialize models - source: main.py line 83-96
         # model: global model for distillation output
         # model1: for computing client features/logits
         # model2: FedAvg refined model
         self.model1 = copy.deepcopy(self.global_model).to(self.device)
         self.model2 = copy.deepcopy(self.global_model).to(self.device)
+<<<<<<< HEAD
 
         # Highway ensemble model - source: main.py line 95
         self.highway_model = Ensemble_highway(
@@ -198,6 +232,19 @@ class FedIC(Server):
         # Global params dict - source: main.py line 97
         self.dict_global_params = self.global_model.state_dict()
 
+=======
+        
+        # Highway ensemble model - source: main.py line 95
+        self.highway_model = Ensemble_highway(
+            num_classes=self.num_classes, 
+            feature_dim=self.feature_dim,
+            num_online_clients=self.num_online_clients
+        ).to(self.device)
+        
+        # Global params dict - source: main.py line 97
+        self.dict_global_params = self.global_model.state_dict()
+        
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
         # Optimizers - source: main.py line 104-106
         self.optimizer = Adam(self.global_model.parameters(), lr=self.lr_global_teaching, weight_decay=0.0002)
         self.highway_optimizer = Adam(self.highway_model.parameters(), lr=self.lr_global_teaching)
@@ -239,6 +286,7 @@ class FedIC(Server):
     
     def _load_teaching_data(self):
         """
+<<<<<<< HEAD
         Load teaching and unlabeled data from ORIGINAL BALANCED CIFAR-10.
         
         Source data flow (main.py line 310-335):
@@ -304,6 +352,51 @@ class FedIC(Server):
         
         images = torch.stack(images).to(self.device)
         labels = torch.stack(labels).to(self.device)
+=======
+        Load global teaching dataset for server-side training.
+        Uses the training data from all clients as the teaching set.
+        Source: main.py uses indices2data_teach (subset of training data)
+        
+        For simplicity, we use all client training data combined.
+        """
+        all_images = []
+        all_labels = []
+        
+        for i in range(self.num_clients):
+            train_data = read_client_data(self.dataset, i, is_train=True)
+            for img, label in train_data:
+                all_images.append(img)
+                all_labels.append(label)
+        
+        self.teaching_images = torch.stack(all_images)
+        self.teaching_labels = torch.tensor(all_labels)
+        
+        print(f"[FedIC] Loaded teaching data: {len(self.teaching_images)} samples")
+        
+        # Also use training data as unlabeled data (like source code)
+        self.unlabeled_images = self.teaching_images
+        self.unlabeled_labels = self.teaching_labels
+    
+    def _get_teaching_batch(self, batch_size, use_unlabeled=False):
+        """
+        Sample a batch from teaching/unlabeled data.
+        Source: main.py line 133-145
+        """
+        if use_unlabeled:
+            total_indices = list(range(len(self.unlabeled_images)))
+        else:
+            total_indices = list(range(len(self.teaching_images)))
+        
+        batch_indices = self.random_state.choice(total_indices, batch_size, replace=False)
+        
+        if use_unlabeled:
+            images = self.unlabeled_images[batch_indices].to(self.device)
+            labels = self.unlabeled_labels[batch_indices].to(self.device)
+        else:
+            images = self.teaching_images[batch_indices].to(self.device)
+            labels = self.teaching_labels[batch_indices].to(self.device)
+        
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
         return images, labels
     
     def _features_logits(self, images, list_dicts_local_params):
@@ -373,8 +466,13 @@ class FedIC(Server):
                 images, copy.deepcopy(list_dicts_local_params)
             )
             
+<<<<<<< HEAD
             # Source line 170: no no_grad() wrapper on model2 (eval mode, only highway_optimizer steps)
             _, fedavg_new_logits = self.model2(images)
+=======
+            with torch.no_grad():
+                _, fedavg_new_logits = self.model2(images)
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
             
             ensemble_avg_logit_finally = self.highway_model(
                 ensemble_step, ensemble_feature_temp, ensemble_logit_temp, fedavg_new_logits
@@ -399,6 +497,7 @@ class FedIC(Server):
             # Get labeled batch
             images_labeled, labels_train = self._get_teaching_batch(self.mini_batch_size)
             
+<<<<<<< HEAD
             # Teacher: source computes without no_grad(), uses y.detach() at KL loss
             # _features_logits already uses no_grad() internally (source: main.py line 231)
             teacher_feature_temp, teacher_logits_temp = self._features_logits(
@@ -408,6 +507,17 @@ class FedIC(Server):
             logits_teacher = self.highway_model(
                 round_idx, teacher_feature_temp, teacher_logits_temp, fedavg_unlabeled_logits
             )
+=======
+            # Teacher: highway ensemble on unlabeled data
+            with torch.no_grad():
+                teacher_feature_temp, teacher_logits_temp = self._features_logits(
+                    images_unlabeled, copy.deepcopy(list_dicts_local_params)
+                )
+                _, fedavg_unlabeled_logits = self.model2(images_unlabeled)
+                logits_teacher = self.highway_model(
+                    round_idx, teacher_feature_temp, teacher_logits_temp, fedavg_unlabeled_logits
+                )
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
             
             # Student: global model on unlabeled data
             _, logits_student = self.global_model(images_unlabeled)
@@ -431,6 +541,7 @@ class FedIC(Server):
         # Update global params
         self.dict_global_params = self.global_model.state_dict()
     
+<<<<<<< HEAD
     def evaluate(self, acc=None, loss=None):
         """Sync global_model and all clients before parent evaluation."""
         self.global_model.load_state_dict(self.dict_global_params)
@@ -442,12 +553,19 @@ class FedIC(Server):
 
     def train(self):
         """Main training loop - Source: main.py line 353-381"""
+=======
+    def train(self):
+        """
+        Main training loop - Source: main.py line 353-381 (disalign function)
+        """
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
         for round_idx in range(1, self.global_rounds + 1):
             s_t = time.time()
             
             # Select online clients
             self.selected_clients = self.select_clients()
             
+<<<<<<< HEAD
             # Send global params to selected clients (source: main.py line 354)
             dict_global_params = copy.deepcopy(self.dict_global_params)
             for client in self.selected_clients:
@@ -458,12 +576,30 @@ class FedIC(Server):
             list_nums_local_data = []
             
             for client in self.selected_clients:
+=======
+            # Download global params to clients
+            dict_global_params = copy.deepcopy(self.dict_global_params)
+            
+            # Send models to all clients
+            for client in self.clients:
+                client.set_parameters_dict(dict_global_params)
+            
+            # Local training
+            list_dicts_local_params = []
+            list_nums_local_data = []
+            
+            print(f"\n--- Round {round_idx}/{self.global_rounds} ---")
+            print(f"Selected clients: {[c.id for c in self.selected_clients]}")
+            
+            for client in tqdm(self.selected_clients, desc='Local training'):
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
                 client.train()
                 dict_local_params = client.upload_params()
                 list_dicts_local_params.append(dict_local_params)
                 list_nums_local_data.append(client.train_samples)
             
             # Server-side update (three-stage distillation)
+<<<<<<< HEAD
             self.update_distillation_highway_feature(
                 round_idx,
                 copy.deepcopy(list_dicts_local_params),
@@ -482,3 +618,83 @@ class FedIC(Server):
         print(f"Average time per round: {sum(self.Budget) / len(self.Budget):.2f}s")
         self.save_results()
         self.save_global_model()
+=======
+            print(f"Round [{round_idx}/{self.global_rounds}] Global Updating")
+            self.update_distillation_highway_feature(
+                round_idx, 
+                copy.deepcopy(list_dicts_local_params), 
+                list_nums_local_data
+            )
+            
+            # Evaluate global model
+            self.global_model.load_state_dict(self.dict_global_params)
+            
+            # Global test accuracy
+            if self.global_testloader is not None:
+                global_acc = self._evaluate_global()
+                self.rs_global_acc.append(global_acc)
+                self.epoch_acc.append(global_acc)
+                print(f"Global Test Accuracy: {global_acc:.4f}")
+            
+            # Local test metrics (average across clients)
+            self._evaluate_clients()
+            
+            # Time cost
+            time_cost = time.time() - s_t
+            self.Budget.append(time_cost)
+            print(f"Time cost: {time_cost:.2f}s")
+            
+            print('-' * 50)
+            print(f'Distillation_acc_test: {self.epoch_acc}')
+        
+        # Training complete
+        print(f"\n{'='*50}")
+        print("FedIC Training Complete")
+        print(f"{'='*50}")
+        
+        self.save_results()
+        self.save_global_model()
+    
+    def _evaluate_global(self):
+        """Evaluate global model on global test set."""
+        self.global_model.eval()
+        correct = 0
+        total = 0
+        
+        with torch.no_grad():
+            for images, labels in self.global_testloader:
+                images, labels = images.to(self.device), labels.to(self.device)
+                _, outputs = self.global_model(images)
+                _, predicted = torch.max(outputs, 1)
+                total += labels.size(0)
+                correct += (predicted == labels).sum().item()
+        
+        return correct / total
+    
+    def _evaluate_clients(self):
+        """Evaluate and aggregate client metrics."""
+        # Send updated model to clients
+        for client in self.clients:
+            client.set_parameters_dict(self.dict_global_params)
+        
+        # Collect metrics
+        total_samples = 0
+        total_correct = 0
+        total_loss = 0.0
+        
+        for client in self.clients:
+            stats = client.test_metrics_local()
+            total_samples += stats['num_samples']
+            total_correct += stats['num_correct']
+            total_loss += stats['loss'] * stats['num_samples']
+        
+        avg_acc = total_correct / total_samples if total_samples > 0 else 0
+        avg_loss = total_loss / total_samples if total_samples > 0 else 0
+        
+        self.rs_test_acc.append(avg_acc)
+        self.rs_train_loss.append(avg_loss)
+        self.rs_test_auc.append(0.0)  # Placeholder
+        
+        print(f"Averaged Train Loss: {avg_loss:.4f}")
+        print(f"Averaged Local Test Acc: {avg_acc:.4f}")
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d

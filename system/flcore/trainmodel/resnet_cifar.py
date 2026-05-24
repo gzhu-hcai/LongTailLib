@@ -373,11 +373,19 @@ class ResNet18_CIFAR(nn.Module):
     """
     ResNet18 for CIFAR-10/100 (512-dim features)
     Source: FedLoGe-master/model/model_res.py line 119-169
+<<<<<<< HEAD
 
     Features:
     - 4 stages: 64 -> 128 -> 256 -> 512 channels
     - 512-dim feature output
     - Returns (feature, logit) tuple for consistency with resnet8_cifar
+=======
+    
+    Features:
+    - 4 stages: 64 -> 128 -> 256 -> 512 channels
+    - 512-dim feature output
+    - Supports latent_output parameter for feature extraction
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
     - No maxpool (CIFAR-optimized)
     """
     def __init__(self, num_classes=10):
@@ -389,18 +397,28 @@ class ResNet18_CIFAR(nn.Module):
         # Stem: 3x3 conv, no maxpool (CIFAR-optimized)
         self.conv1 = conv3x3(3, 64)
         self.bn1 = nn.BatchNorm2d(64)
+<<<<<<< HEAD
 
+=======
+        
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
         # 4 stages
         self.layer1 = self._make_layer(block, 64, num_blocks[0], stride=1)
         self.layer2 = self._make_layer(block, 128, num_blocks[1], stride=2)
         self.layer3 = self._make_layer(block, 256, num_blocks[2], stride=2)
         self.layer4 = self._make_layer(block, 512, num_blocks[3], stride=2)
+<<<<<<< HEAD
 
         self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
         # Use 'classifier' for consistency with resnet8_cifar
         self.classifier = nn.Linear(512 * block.expansion, num_classes)
 
         self.num_classes = num_classes
+=======
+        
+        self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
+        self.linear = nn.Linear(512 * block.expansion, num_classes)
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
 
     def _make_layer(self, block, planes, num_blocks, stride):
         strides = [stride] + [1] * (num_blocks - 1)
@@ -412,6 +430,7 @@ class ResNet18_CIFAR(nn.Module):
 
     def forward(self, x, latent_output=False):
         """
+<<<<<<< HEAD
         Forward pass - returns (feature, logit) tuple for consistency
 
         Args:
@@ -421,15 +440,27 @@ class ResNet18_CIFAR(nn.Module):
         Returns:
             If latent_output=True: 512-dim features only
             If latent_output=False: (feature, logit) tuple
+=======
+        Forward pass with optional feature extraction
+        
+        Args:
+            x: input tensor
+            latent_output: if True, return 512-dim features; if False, return logits
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
         """
         out = self.conv1(x)
         out = self.bn1(out)
         out = F.relu(out)
+<<<<<<< HEAD
 
+=======
+        
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
         out = self.layer1(out)
         out = self.layer2(out)
         out = self.layer3(out)
         out = self.layer4(out)
+<<<<<<< HEAD
 
         out = self.avgpool(out)
         feature = out.view(out.size(0), -1)  # 512-dim features
@@ -439,19 +470,37 @@ class ResNet18_CIFAR(nn.Module):
 
         logit = self.classifier(feature)
         return feature, logit
+=======
+        
+        out = self.avgpool(out)
+        out = out.view(out.size(0), -1)
+        
+        if latent_output:
+            return out  # 512-dim features
+        else:
+            return self.linear(out)  # logits
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
 
 
 def resnet18_cifar(num_classes=10):
     """
     ResNet18 for CIFAR-10/100 (512-dim features)
+<<<<<<< HEAD
 
     Args:
         num_classes: number of classes
 
+=======
+    
+    Args:
+        num_classes: number of classes
+        
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
     Returns:
         ResNet18_CIFAR model with feature_dim=512
     """
     return ResNet18_CIFAR(num_classes=num_classes)
+<<<<<<< HEAD
 
 
 # ============================================================================
@@ -615,3 +664,5 @@ def resnet20_cifar_512(num_classes=10):
         ResNet20_CIFAR_512 model with feature_dim=512
     """
     return ResNet20_CIFAR_512(num_classes=num_classes)
+=======
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d

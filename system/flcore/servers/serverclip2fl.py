@@ -19,7 +19,11 @@ from torch.utils.data import Dataset, DataLoader
 
 from flcore.servers.serverbase import Server
 from flcore.clients.clientclip2fl import clientCLIP2FL, Local
+<<<<<<< HEAD
 from flcore.trainmodel.resnet_cifar import resnet8_cifar_512, resnet18_cifar, resnet20_cifar_512
+=======
+from flcore.trainmodel.resnet_cifar import resnet8_cifar_512
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
 from utils.data_utils import read_client_data
 
 
@@ -134,8 +138,12 @@ class Global(object):
                  num_classes: int,
                  device: str,
                  args,
+<<<<<<< HEAD
                  num_of_feature,
                  model_type='ResNet8'):
+=======
+                 num_of_feature):
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
         self.device = device
         self.num_classes = num_classes
         self.fedavg_acc = []
@@ -146,6 +154,7 @@ class Global(object):
         self.ft_many = []
         self.ft_medium = []
         self.ft_few = []
+<<<<<<< HEAD
         self.num_of_feature = int(num_of_feature)
         self.num_classes = int(num_classes)
 
@@ -156,12 +165,20 @@ class Global(object):
                                        requires_grad=True, device=args.device)
         # Use torch.arange().repeat_interleave() instead of np.ones to avoid numpy float64 issues
         self.label_syn = torch.arange(self.num_classes, device=args.device).repeat_interleave(self.num_of_feature)
+=======
+        self.num_of_feature = num_of_feature
+        self.feature_syn = torch.randn(size=(args.num_classes * self.num_of_feature, 512), dtype=torch.float,
+                                       requires_grad=True, device=args.device)
+        self.label_syn = torch.tensor([np.ones(self.num_of_feature) * i for i in range(args.num_classes)], dtype=torch.long,
+                                      requires_grad=False, device=args.device).view(-1)
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
         self.optimizer_feature = SGD([self.feature_syn, ], lr=args.lr_feature)
         self.criterion = CrossEntropyLoss().to(args.device)
 
         # PCL loss
         self.contras_criterion = SupConLoss_text(args.device, args.ins_temp, args.num_classes)
 
+<<<<<<< HEAD
         # Support flexible model selection
         if model_type in ['ResNet18', 'resnet18']:
             print(f"[CLIP2FL] Using resnet18_cifar (feature_dim=512)")
@@ -174,6 +191,10 @@ class Global(object):
             self.syn_model = resnet8_cifar_512(num_classes=args.num_classes, scaling=4).to(device)
 
         self.feature_net = nn.Linear(self.feature_dim, args.num_classes).to(args.device)
+=======
+        self.syn_model = resnet8_cifar_512(num_classes=args.num_classes, scaling=4).to(device)
+        self.feature_net = nn.Linear(512, args.num_classes).to(args.device)
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
 
     def update_feature_syn(self, args, global_params, list_clients_gradient, new_text_features):
         feature_net_params = self.feature_net.state_dict()
@@ -280,6 +301,7 @@ class Global(object):
 
 class FedCLIP2FL(Server):
     """CLIP2FL Server: Classifier Re-training with Federated Features + CLIP Knowledge Distillation"""
+<<<<<<< HEAD
 
     def __init__(self, args, times):
         self._set_clip2fl_defaults(args)
@@ -300,6 +322,11 @@ class FedCLIP2FL(Server):
             args.model = resnet8_cifar_512(num_classes=args.num_classes, scaling=4).to(args.device)
             print(f"[CLIP2FL] Using resnet8_cifar_512 (feature_dim=512)")
 
+=======
+    
+    def __init__(self, args, times):
+        self._set_clip2fl_defaults(args)
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
         super().__init__(args, times)
         
         # CLIP2FL-specific parameters
@@ -320,6 +347,7 @@ class FedCLIP2FL(Server):
         
         self.set_slow_clients()
         self.set_clients(clientCLIP2FL)
+<<<<<<< HEAD
 
         # Load CLIP model and text features ONCE (shared across all clients to save memory)
         # Aligned with source code: CLIP loaded once in server, passed to local_train
@@ -330,6 +358,9 @@ class FedCLIP2FL(Server):
             client.set_clip_model(self.clip_model, self.text_features)
         print(f"[Server] CLIP model shared with {len(self.clients)} clients")
 
+=======
+        
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
         # Preload client data for gradient computation
         self.list_client2data = []
         self.original_dict_per_client = {}
@@ -342,11 +373,15 @@ class FedCLIP2FL(Server):
             self.original_dict_per_client[client_id] = class_counts
         
         # Initialize CLIP2FL Global model
+<<<<<<< HEAD
         # Use the same model_type that was used to create args.model
+=======
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
         self.clip2fl_global = Global(
             num_classes=self.num_classes,
             device=self.device,
             args=args,
+<<<<<<< HEAD
             num_of_feature=self.num_of_feature,
             model_type=self.model_type
         )
@@ -354,6 +389,17 @@ class FedCLIP2FL(Server):
         temp_model = nn.Linear(512, self.num_classes).to(self.device)
         self.syn_params = temp_model.state_dict()
 
+=======
+            num_of_feature=self.num_of_feature
+        )
+        
+        temp_model = nn.Linear(512, self.num_classes).to(self.device)
+        self.syn_params = temp_model.state_dict()
+        
+        # Load CLIP model and text features
+        self._load_clip_and_text_features(args)
+        
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
         print(f"\n{'='*60}")
         print(f"CLIP2FL Configuration:")
         print(f"  num_clients: {self.num_clients}")
@@ -404,11 +450,14 @@ class FedCLIP2FL(Server):
             args.T = 3.0
         if not hasattr(args, 'ins_temp') or args.ins_temp is None:
             args.ins_temp = 0.1
+<<<<<<< HEAD
         # DSA parameters (aligned with source code options.py)
         if not hasattr(args, 'dsa') or args.dsa is None:
             args.dsa = True  # Default True in source (method='DSA')
         if not hasattr(args, 'dsa_strategy') or args.dsa_strategy is None:
             args.dsa_strategy = 'color_crop_cutout_flip_scale_rotate'
+=======
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
 
     def _load_clip_and_text_features(self, args):
         """Load CLIP model and generate text features"""
@@ -416,6 +465,7 @@ class FedCLIP2FL(Server):
             import clip
             self.clip_model, self.clip_preprocess = clip.load('ViT-B/32', args.device)
             self.clip_model.eval()
+<<<<<<< HEAD
 
             if args.num_classes == 10:
                 # CIFAR-10 class names
@@ -434,6 +484,13 @@ class FedCLIP2FL(Server):
                     'squirrel', 'streetcar', 'sunflower', 'sweet_pepper', 'table', 'tank', 'telephone', 'television', 'tiger', 'tractor',
                     'train', 'trout', 'tulip', 'turtle', 'wardrobe', 'whale', 'willow_tree', 'wolf', 'woman', 'worm'
                 ]
+=======
+            
+            if args.num_classes == 10:
+                label_name = ['airplane', 'automobile', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck']
+            elif args.num_classes == 100:
+                label_name = [f'class {i}' for i in range(100)]
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
             else:
                 label_name = [f'class {i}' for i in range(args.num_classes)]
             

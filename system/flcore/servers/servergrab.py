@@ -377,12 +377,17 @@ class FedGraB(Server):
         # line 11: lr = 0.03
         # line 12: momentum = 0.5
         # line 20: seed = 1
+<<<<<<< HEAD
 
+=======
+        
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
         args.num_clients = 40  # options.py line 9
         args.join_ratio = 1.0  # fed_grab.py line 69: args.frac = 1
         args.batch_size = 10   # options.py line 10
         args.local_learning_rate = 0.03  # options.py line 11
         args.local_epochs = 5  # options.py line 7
+<<<<<<< HEAD
 
         # Support flexible model selection from command line
         # Default to ResNet18 if no model specified
@@ -429,17 +434,61 @@ class FedGraB(Server):
                                       class_activation=False)
                             for _ in range(self.num_clients)]
 
+=======
+        
+        # Use ResNet18 for CIFAR (feature_dim=512) from resnet_cifar.py
+        # This matches FedGraB-main/model/model_res.py ResNet18 exactly:
+        # - 4 stages: 64 -> 128 -> 256 -> 512
+        # - 3x3 conv stem, no maxpool (CIFAR-optimized)
+        # - num_blocks = [2, 2, 2, 2]
+        from flcore.trainmodel.models import BaseHeadSplit
+        print(f"\n[FedGraB] Using resnet18_cifar from resnet_cifar.py (feature_dim=512)")
+        base_model = resnet18_cifar(num_classes=args.num_classes)
+        args.head = copy.deepcopy(base_model.linear)
+        base_model.linear = nn.Identity()
+        args.model = BaseHeadSplit(base_model, args.head).to(args.device)
+        
+        super().__init__(args, times)
+        
+        # Source: fed_grab.py line 62-65
+        block_expansion = 1  # ResNet18
+        self.feature_dim = 512 * block_expansion
+        
+        # g_backbone is self.global_model.base
+        # g_classifier - Source: fed_grab.py line 65
+        self.g_classifier = nn.Linear(self.feature_dim, self.num_classes).to(self.device)
+        
+        # g_linears - one per client - Source: fed_grab.py line 74-76
+        self.g_linears = [nn.Linear(self.feature_dim, self.num_classes).to(self.device) 
+                         for _ in range(self.num_clients)]
+        
+        # g_pid_losses - one per client - Source: fed_grab.py line 78
+        self.g_pid_losses = [PIDLOSS(device=self.device, 
+                                      num_classes=self.num_classes,
+                                      pidmask=["head", "middle"], 
+                                      class_activation=False) 
+                            for _ in range(self.num_clients)]
+        
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
         # Initialize PIDLOSS - Source: fed_grab.py line 80-86
         all_classes = list(range(self.num_classes))
         for idx in range(self.num_clients):
             self.g_pid_losses[idx].get_3shotclass(head_class=[], middle_class=[], tail_class=all_classes)
             self.g_pid_losses[idx].apply_3shot_mask()
             self.g_pid_losses[idx].apply_class_activation()
+<<<<<<< HEAD
 
         # Create clients
         self.set_slow_clients()
         self.set_clients(ClientGRAB)
 
+=======
+        
+        # Create clients
+        self.set_slow_clients()
+        self.set_clients(ClientGRAB)
+        
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
         # Pass PIDLOSS and classifier to each client
         for idx, client in enumerate(self.clients):
             client.set_pid_loss(self.g_pid_losses[idx])
@@ -554,9 +603,12 @@ class FedGraB(Server):
                 
                 # Source: update_baseline.py line 197-198
                 feat = self.global_model.base(images)
+<<<<<<< HEAD
                 # Handle models that return (feature, logit) tuple
                 if isinstance(feat, tuple):
                     feat = feat[0]
+=======
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
                 outputs = self.g_classifier(feat)
                 _, predicted = torch.max(outputs.data, 1)
                 

@@ -135,6 +135,7 @@ if __name__ == "__main__":
             if len(sys.argv) > 6:
                 try:
                     imb_factor = float(sys.argv[6])
+<<<<<<< HEAD
                     if imb_factor < 1:
                         print("Warning: IF should be >= 1 (e.g., IF=50 means head has 50x samples of tail). Using default.")
                         imb_factor = None
@@ -151,6 +152,22 @@ if __name__ == "__main__":
                 du.alpha = 0.5
             else:
                 du.alpha = alpha_val
+=======
+                    if imb_factor <= 0:
+                        print("Warning: Imbalance factor should be > 0, using default value.")
+                        imb_factor = None
+                    elif imb_factor <= 1:
+                        print("Note: legacy imbalance factor (<=1) provided; it will be auto-converted to IF in dataset_utils.")
+                except ValueError:
+                    print("Warning: Invalid imbalance factor, using default value.")
+    
+    # 目录命名中的α标签（仅用于命名展示，不影响实际划分alpha）
+    alpha_tag = sys.argv[7] if len(sys.argv) > 7 else "0.5"
+    # Optional: make alpha_tag also set the Dirichlet alpha used for partition
+    if len(sys.argv) > 7:
+        try:
+            du.alpha = float(sys.argv[7])
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
         except ValueError:
             print("Warning: Invalid alpha value; using default:", du.alpha)
 
@@ -194,4 +211,8 @@ if __name__ == "__main__":
 
     print(f"[debug] alpha={du.alpha}, num_clients={num_clients}")
 
+<<<<<<< HEAD
     generate_dataset(dir_path, num_clients, niid, balance, partition, longtail, longtail_type, imb_factor)
+=======
+generate_dataset(dir_path, num_clients, niid, balance, partition, longtail, longtail_type, imb_factor)
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d

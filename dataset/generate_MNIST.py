@@ -17,7 +17,11 @@ if torch.cuda.is_available():
     torch.cuda.manual_seed_all(1)
 num_clients = 20
 # 将输出目录统一到项目下的 dataset/MNIST/，便于后续分析脚本读取
+<<<<<<< HEAD
 dir_path = os.path.join("MNIST") + os.sep  # will be overridden dynamically in __main__
+=======
+dir_path = os.path.join("MNIST1") + os.sep
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
 
 
 # Allocate data to users
@@ -129,8 +133,13 @@ if __name__ == "__main__":
             if len(sys.argv) > pos:
                 try:
                     imb_factor = float(sys.argv[pos])
+<<<<<<< HEAD
                     if imb_factor < 1:
                         print("Warning: IF should be >= 1 (e.g., IF=50 means head has 50x samples of tail). Using default.")
+=======
+                    if imb_factor <= 0 or imb_factor > 1:
+                        print("Warning: Imbalance factor should be in (0, 1], using default value.")
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
                         imb_factor = None
                     else:
                         pos += 1
@@ -142,11 +151,15 @@ if __name__ == "__main__":
     # 无论是否长尾，后续均可按顺序传入 alpha、seed、num_clients
     if len(sys.argv) > pos:
         try:
+<<<<<<< HEAD
             alpha_override = float(sys.argv[pos])
             if alpha_override <= 0 or alpha_override > 1:
                 print("Warning: alpha should be in (0, 1]. Using default 0.5")
                 alpha_override = 0.5
             pos += 1
+=======
+            alpha_override = float(sys.argv[pos]); pos += 1
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
         except ValueError:
             print("Warning: Invalid alpha, fall back to default in dataset_utils.py")
     if len(sys.argv) > pos:
@@ -160,6 +173,7 @@ if __name__ == "__main__":
         except ValueError:
             print("Warning: Invalid num_clients, use default 20.")
 
+<<<<<<< HEAD
     # 根据参数动态构造数据集目录名
     script_dir = os.path.dirname(os.path.abspath(__file__))
     alpha_tag = alpha_override if alpha_override is not None else du.alpha
@@ -174,6 +188,8 @@ if __name__ == "__main__":
         dir_name = f"MNIST-NC{num_clients}"
     dir_path = os.path.join(script_dir, dir_name) + os.sep
 
+=======
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
     print(f"Generating MNIST dataset with settings:")
     print(f"  - Non-IID: {niid}")
     print(f"  - Balanced: {balance}")
@@ -184,7 +200,10 @@ if __name__ == "__main__":
     print(f"  - Dirichlet alpha: {alpha_override if alpha_override is not None else du.alpha}")
     print(f"  - Seed: {seed if seed is not None else '-'}")
     print(f"  - Num Clients: {num_clients}")
+<<<<<<< HEAD
     print(f"  - Output Dir: {dir_path}")
+=======
+>>>>>>> 15b6b60dba275c21157ead9a494232b7bb315b8d
 
     # 设置全局随机种子
     if seed is not None:
