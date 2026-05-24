@@ -115,10 +115,10 @@ python main.py -data Cifar10-IF50-α0.5-global-NC100 -algo fednh -m resnet18 -gr
 python main.py -data Cifar10-IF50-α0.5-global-NC20 -algo fedic -m resnet8 -gr 200 -did 0
 ```
 
-#### 9\. FedGraB
+#### 9\. FedYoYo
 
 ```Plain Text
-python main.py -data Cifar10-IF50-α0.5-global-NC40 -algo fedgrab -m resnet18 -gr 200 -did 0
+python main.py -data Cifar10-IF50-α0.5-global-NC20 -algo fedyoyo -m resnet18 -gr 200 -did 0
 ```
 
 ## Parameter Instruction
