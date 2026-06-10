@@ -103,10 +103,10 @@ python main.py -data Cifar10-IF50-α0.5-global-NC20 -m resnet20 -algo fedetf -gr
 python main.py -data Cifar10-IF50-α0.5-global-NC40 -algo fedloge -m resnet18 -gr 200 -did 0
 ```
 
-#### 7\. FedNH
+#### 7\. FedGraB
 
 ```Plain Text
-python main.py -data Cifar10-IF50-α0.5-global-NC100 -algo fednh -m resnet18 -gr 200 -did 0
+python main.py -data Cifar10-IF50-α0.5-global-NC20 -algo fedgrab -m resnet18 -gr 200 -did 0
 ```
 
 #### 8\. FedIC
