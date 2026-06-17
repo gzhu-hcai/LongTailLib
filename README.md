@@ -94,7 +94,7 @@ python main.py -data Cifar10-IF50-α0.5-global-NC20 -algo RUCR -m resnet8 -gr 20
 #### 5\. FedETF
 
 ```Plain Text
-python main.py -data Cifar10-IF50-α0.5-global-NC20 -m resnet20 -algo fedetf -gr 200 -did 0
+python main.py -data Cifar10-IF50-α0.5-global-NC20 -algo fedetf -m resnet20 -gr 200 -did 0
 ```
 
 #### 6\. FedLoGe
