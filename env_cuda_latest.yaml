@@ -1,4 +1,4 @@
-name: LongTailLib
+name: FedLTLib
 channels:
   - pytorch
   - nvidia
@@ -29,3 +29,7 @@ dependencies:
     - diffusers
     - accelerate
     - transformers
+    - ftfy
+    - regex
+    - tqdm
+    - clip @ git+https://github.com/openai/CLIP.gi
