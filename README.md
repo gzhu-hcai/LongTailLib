@@ -76,7 +76,7 @@ python main.py -data Cifar10-IF50-α0.5-global-NC20 -algo CREFF -m ResNet8 -gr 2
 #### 2\. CLIP2FL
 
 ```Plain Text
-python main.py -data Cifar10-IF50-α0.5-global-NC20 -m ResNet8 -algo CLIP2FL -gr 200 -did 0
+python main.py -data Cifar10-IF50-α0.5-global-NC20 -algo CLIP2FL -m ResNet8 -gr 200 -did 0
 ```
 
 #### 3\. CCVR
@@ -100,7 +100,7 @@ python main.py -data Cifar10-IF50-α0.5-global-NC20 -m resnet20 -algo fedetf -gr
 #### 6\. FedLoGe
 
 ```Plain Text
-python main.py -data Cifar10-IF50-α0.5-global-NC40 -algo fedloge -m resnet18 -gr 200 -did 0
+python main.py -data Cifar10-IF50-α0.5-global-NC20 -algo fedloge -m resnet18 -gr 200 -did 0
 ```
 
 #### 7\. FedGraB
