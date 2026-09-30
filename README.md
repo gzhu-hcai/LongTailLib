@@ -137,7 +137,7 @@ python main.py -data Cifar10-IF50-α0.5-global-NC20 -algo fedyoyo -m resnet18 -g
 
 If you use FedLTLib for your research, please star this repository and cite our project in your publications\.
 
-## Contribution \&amp; Support
+## Contribution
 
 We welcome all forms of contributions, including new algorithm integration, dataset expansion, code optimization, and bug fixes\. For questions and technical support, please submit an Issue or initiate a Pull Request\.
 
